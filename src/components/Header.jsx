@@ -5,7 +5,8 @@ import {
   Bell, 
   Car, 
   X, 
-  User 
+  User,
+  Menu
 } from 'lucide-react';
 
 export default function Header({ 
@@ -17,17 +18,18 @@ export default function Header({
   activeVehicle, 
   onClearVehicle,
   currentView,
-  setCurrentView
+  setCurrentView,
+  onOpenMobileMenu
 }) {
   const lowStockCount = parts.filter(p => p.stock <= p.minStock).length;
 
   const viewTitles = {
-    dashboard: 'Panel General y Métricas',
-    pos: 'Punto de Venta & Mostrador (POS)',
-    inventory: 'Inventario y Almacén de Repuestos',
-    vehicles: 'Buscador de Compatibilidad Vehicular',
-    sales: 'Historial de Ventas y Cotizaciones',
-    settings: 'Configuración de la Tienda (Marca Blanca)'
+    dashboard: 'Panel General',
+    pos: 'Punto de Venta (POS)',
+    inventory: 'Inventario de Repuestos',
+    vehicles: 'Compatibilidad Vehicular',
+    sales: 'Ventas y Cotizaciones',
+    settings: 'Configuración de Tienda'
   };
 
   return (
@@ -35,33 +37,54 @@ export default function Header({
       height: 'var(--header-height)',
       backgroundColor: 'var(--bg-secondary)',
       borderBottom: '1px solid var(--border-color)',
-      padding: '0 24px',
+      padding: '0 clamp(10px, 3vw, 24px)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       position: 'sticky',
       top: 0,
-      zIndex: 90
+      zIndex: 90,
+      gap: '10px'
     }}>
-      {/* Left: View Title & Active Vehicle Filter */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+      {/* Left: Hamburger (mobile) + View Title & Active Vehicle */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden', minWidth: 0 }}>
+        {/* Mobile Hamburger Button */}
+        <button
+          className="btn btn-secondary btn-icon mobile-only"
+          onClick={onOpenMobileMenu}
+          title="Abrir menú"
+          style={{ width: '36px', height: '36px', flexShrink: 0 }}
+        >
+          <Menu size={20} />
+        </button>
+
+        {/* Small Logo */}
         <div style={{
-          width: '36px',
-          height: '36px',
+          width: '32px',
+          height: '32px',
           borderRadius: '8px',
           overflow: 'hidden',
           border: '1px solid rgba(0, 229, 255, 0.45)',
-          boxShadow: '0 0 10px rgba(0, 229, 255, 0.25)',
+          boxShadow: '0 0 8px rgba(0, 229, 255, 0.25)',
           flexShrink: 0,
           backgroundColor: '#050811'
         }}>
           <img src="/logo.jpg" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
-        <div>
-          <h2 style={{ fontSize: '1.18rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+
+        <div style={{ minWidth: 0, overflow: 'hidden' }}>
+          <h2 style={{ 
+            fontSize: 'clamp(0.95rem, 3.5vw, 1.18rem)', 
+            fontWeight: 800, 
+            color: 'var(--text-primary)',
+            whiteSpace: 'nowrap',
+            textOverflow: 'ellipsis',
+            overflow: 'hidden',
+            lineHeight: 1.2
+          }}>
             {viewTitles[currentView] || 'B&G Multiservicios'}
           </h2>
-          <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>
+          <div className="desktop-only" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
             {settings.legalName} • <span style={{ color: 'var(--accent-cyan)' }}>{settings.taxId}</span>
           </div>
         </div>
@@ -71,18 +94,20 @@ export default function Header({
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            gap: '6px',
             backgroundColor: 'var(--primary-light)',
             border: '1px solid var(--border-accent)',
-            padding: '4px 12px',
+            padding: '3px 8px',
             borderRadius: 'var(--radius-full)',
-            fontSize: '0.8rem',
+            fontSize: '0.75rem',
             color: 'var(--primary-hover)',
-            fontWeight: 600
+            fontWeight: 600,
+            whiteSpace: 'nowrap',
+            flexShrink: 0
           }}>
-            <Car size={14} />
-            <span>
-              Vehículo: {activeVehicle.make} {activeVehicle.model} {activeVehicle.year || ''}
+            <Car size={13} />
+            <span style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {activeVehicle.make} {activeVehicle.model || ''}
             </span>
             <button
               onClick={onClearVehicle}
@@ -96,35 +121,34 @@ export default function Header({
                 padding: '2px'
               }}
             >
-              <X size={14} />
+              <X size={13} />
             </button>
           </div>
         )}
       </div>
 
       {/* Right: Actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
         {/* Stock Alert Bell */}
         <button
           className="btn btn-secondary btn-icon"
           onClick={onOpenAlerts}
           title="Alertas de Stock"
-          style={{ position: 'relative' }}
+          style={{ position: 'relative', width: '36px', height: '36px' }}
         >
-          <Bell size={18} />
+          <Bell size={17} />
           {lowStockCount > 0 && (
             <span style={{
               position: 'absolute',
-              top: '4px',
-              right: '4px',
-              width: '18px',
-              height: '18px',
+              top: '2px',
+              right: '2px',
+              width: '16px',
+              height: '16px',
               backgroundColor: 'var(--danger)',
               color: '#ffffff',
               borderRadius: '50%',
-              fontSize: '0.68rem',
-              fontWeight: 700,
+              fontSize: '0.64rem',
+              fontWeight: 800,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -140,24 +164,24 @@ export default function Header({
           className="btn btn-secondary btn-icon"
           onClick={toggleTheme}
           title={theme === 'dark' ? 'Cambiar a Modo Claro' : 'Cambiar a Modo Oscuro'}
+          style={{ width: '36px', height: '36px' }}
         >
-          {theme === 'dark' ? <Sun size={18} color="var(--warning)" /> : <Moon size={18} color="var(--primary)" />}
+          {theme === 'dark' ? <Sun size={17} color="var(--warning)" /> : <Moon size={17} color="var(--primary)" />}
         </button>
 
-        {/* User / Cashier Tag */}
-        <div style={{
-          display: 'flex',
+        {/* User / Cashier Tag (Desktop only) */}
+        <div className="desktop-only" style={{
           alignItems: 'center',
           gap: '8px',
-          padding: '6px 12px',
+          padding: '5px 10px',
           borderRadius: 'var(--radius-md)',
           backgroundColor: 'var(--bg-tertiary)',
           border: '1px solid var(--border-color)',
-          fontSize: '0.8rem'
+          fontSize: '0.78rem'
         }}>
           <div style={{
-            width: '26px',
-            height: '26px',
+            width: '24px',
+            height: '24px',
             borderRadius: '50%',
             backgroundColor: 'var(--primary)',
             color: '#fff',
@@ -165,13 +189,13 @@ export default function Header({
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-            <User size={14} />
+            <User size={13} />
           </div>
           <div>
             <div style={{ fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.1 }}>
-              Caja 1 • Mostrador
+              Caja 1
             </div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--success)', fontWeight: 500 }}>
+            <div style={{ fontSize: '0.68rem', color: 'var(--success)', fontWeight: 500 }}>
               ● En línea
             </div>
           </div>

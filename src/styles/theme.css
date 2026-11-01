@@ -359,7 +359,7 @@ h1, h2, h3, h4, .brand-title {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -402,13 +402,273 @@ h1, h2, h3, h4, .brand-title {
   background-color: var(--bg-tertiary);
 }
 
+/* POS Layout Responsive Classes */
+.pos-container {
+  display: grid;
+  grid-template-columns: 1fr 430px;
+  gap: 20px;
+  padding: 20px 24px;
+  height: calc(100vh - var(--header-height));
+  overflow: hidden;
+}
+
+.pos-catalog-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: hidden;
+}
+
+.pos-cart-col {
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .pos-container {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    height: auto;
+    min-height: calc(100vh - var(--header-height) - var(--bottom-nav-height));
+    overflow: visible;
+    gap: 14px;
+  }
+
+  .pos-catalog-col {
+    overflow: visible;
+    height: auto;
+  }
+
+  .pos-cart-col {
+    overflow: visible;
+    min-height: 480px;
+  }
+
+  .pos-tab-hidden {
+    display: none !important;
+  }
+}
+
+/* ========================================================
+   RESPONSIVE UTILITIES & MOBILE OPTIMIZATIONS
+   ======================================================== */
+
+.mobile-only {
+  display: none !important;
+}
+
+.desktop-only {
+  display: flex;
+}
+
+/* Touch-friendly scrollable rows */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.touch-scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Bottom Navigation Bar for Mobile */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--bottom-nav-height, 62px);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  display: none;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 200;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(10px);
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 6px 8px;
+  cursor: pointer;
+  flex: 1;
+  transition: all 0.15s ease;
+  position: relative;
+  text-decoration: none;
+  font-family: inherit;
+}
+
+.bottom-nav-item.active {
+  color: var(--primary);
+}
+
+.bottom-nav-item.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 3px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  box-shadow: 0 0 8px var(--primary-glow);
+}
+
+/* Drawer Backdrop for Mobile */
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(3px);
+  z-index: 998;
+  animation: fadeIn 0.2s ease forwards;
+}
+
+/* Responsive Table Container */
+.responsive-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Responsive Grid helpers */
+.responsive-form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.responsive-form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+/* Mobile Breakpoint <= 768px */
+@media (max-width: 768px) {
+  :root, [data-theme="dark"], [data-theme="light"] {
+    --header-height: 58px;
+    --bottom-nav-height: 62px;
+  }
+
+  /* Typography scaling */
+  body {
+    font-size: 14px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Prevent iOS zoom on input focus */
+  .input, .select, .textarea {
+    font-size: 16px !important;
+    padding: 10px 12px;
+  }
+
+  .mobile-only {
+    display: flex !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  .bottom-nav {
+    display: flex;
+  }
+
+  /* Modal adjustments on mobile */
+  .modal-overlay {
+    padding: 10px;
+    align-items: flex-end; /* Bottom sheet feel or centered */
+  }
+
+  .modal-content {
+    max-width: 100% !important;
+    max-height: 92vh !important;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    margin: 0;
+  }
+
+  .modal-header {
+    padding: 14px 18px;
+  }
+
+  .modal-body {
+    padding: 16px 18px;
+  }
+
+  .modal-footer {
+    padding: 12px 18px;
+    flex-direction: column-reverse;
+  }
+
+  .modal-footer .btn {
+    width: 100%;
+  }
+
+  /* Card padding on mobile */
+  .card {
+    padding: 14px;
+    border-radius: var(--radius-md);
+  }
+
+  /* Form Grids collapse to 1 column */
+  .responsive-form-grid-2,
+  .responsive-form-grid-3 {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+  }
+
+  /* Buttons touch target */
+  .btn {
+    min-height: 40px;
+  }
+
+  .btn-sm {
+    min-height: 34px;
+  }
+}
+
+/* Very small screens <= 480px */
+@media (max-width: 480px) {
+  .btn {
+    padding: 8px 14px;
+  }
+  
+  .badge {
+    padding: 3px 8px;
+    font-size: 0.7rem;
+  }
+}
+
 /* Print Styles */
 @media print {
   body {
     background: #ffffff !important;
     color: #000000 !important;
   }
-  .no-print, .sidebar, .header, .btn, .modal-footer {
+  .no-print, .sidebar, .header, .btn, .modal-footer, .bottom-nav {
     display: none !important;
   }
   .printable-area {

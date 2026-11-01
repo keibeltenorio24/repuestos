@@ -4,6 +4,7 @@ import { partsAPI, salesAPI, settingsAPI } from './services/api';
 
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
+import BottomNav from './components/BottomNav';
 import ReceiptModal from './components/ReceiptModal';
 import StockAlertModal from './components/StockAlertModal';
 
@@ -22,6 +23,7 @@ export default function App() {
   const [vehicles, setVehicles] = useState([]);
   const [theme, setTheme] = useState(storage.getTheme());
   const [collapsedSidebar, setCollapsedSidebar] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Filtro vehicular temporal para mostrador
   const [activeVehicle, setActiveVehicle] = useState(null);
@@ -97,9 +99,11 @@ export default function App() {
     setSettings(newSettings);
   };
 
+  const lowStockCount = parts.filter(p => p.stock <= p.minStock).length;
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-primary)' }}>
-      {/* Sidebar de navegación */}
+      {/* Sidebar de navegación (Desktop + Mobile Drawer) */}
       <Sidebar
         currentView={currentView}
         setCurrentView={setCurrentView}
@@ -107,6 +111,8 @@ export default function App() {
         parts={parts}
         collapsed={collapsedSidebar}
         setCollapsed={setCollapsedSidebar}
+        isMobileOpen={isMobileMenuOpen}
+        onCloseMobile={() => setIsMobileMenuOpen(false)}
       />
 
       {/* Main Container */}
@@ -122,10 +128,15 @@ export default function App() {
           onClearVehicle={() => setActiveVehicle(null)}
           currentView={currentView}
           setCurrentView={setCurrentView}
+          onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
         />
 
         {/* Dynamic Views */}
-        <main style={{ flex: 1, overflowY: 'auto' }}>
+        <main style={{ 
+          flex: 1, 
+          overflowY: 'auto',
+          paddingBottom: 'calc(var(--bottom-nav-height, 62px) + env(safe-area-inset-bottom, 0px))'
+        }}>
           {currentView === 'dashboard' && (
             <DashboardView
               parts={parts}
@@ -187,6 +198,14 @@ export default function App() {
             />
           )}
         </main>
+
+        {/* Mobile Bottom Navigation Bar */}
+        <BottomNav
+          currentView={currentView}
+          setCurrentView={setCurrentView}
+          onOpenMenu={() => setIsMobileMenuOpen(true)}
+          lowStockCount={lowStockCount}
+        />
       </div>
 
       {/* Modal de Comprobante / Ticket / Proforma Imprimible */}

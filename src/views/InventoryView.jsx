@@ -240,28 +240,28 @@ export default function InventoryView({
   };
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }} className="animate-fade-in">
+    <div style={{ padding: 'clamp(12px, 2.5vw, 24px)', display: 'flex', flexDirection: 'column', gap: '16px' }} className="animate-fade-in">
       {/* Top Header & Actions */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '16px'
+        gap: '12px'
       }}>
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800 }}>Inventario de Repuestos</h2>
-          <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+          <h2 style={{ fontSize: 'clamp(1.15rem, 3.5vw, 1.4rem)', fontWeight: 800 }}>Inventario de Repuestos</h2>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
             Control de stock, códigos OEM, compatibilidad automotriz y valorización de almacén
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button className="btn btn-secondary" onClick={handleExportCSV}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', width: '100%', maxWidth: '360px' }}>
+          <button className="btn btn-secondary" onClick={handleExportCSV} style={{ flex: '1 1 130px' }}>
             <Download size={16} />
             <span>Exportar CSV</span>
           </button>
-          <button className="btn btn-primary" onClick={handleOpenCreate}>
+          <button className="btn btn-primary" onClick={handleOpenCreate} style={{ flex: '1 1 130px' }}>
             <Plus size={16} />
             <span>Nuevo Repuesto</span>
           </button>
@@ -271,21 +271,21 @@ export default function InventoryView({
       {/* Filter Bar */}
       <div style={{
         backgroundColor: 'var(--bg-secondary)',
-        padding: '16px',
+        padding: '12px 14px',
         borderRadius: 'var(--radius-lg)',
         border: '1px solid var(--border-color)',
         display: 'flex',
-        gap: '12px',
+        gap: '10px',
         flexWrap: 'wrap',
         alignItems: 'center'
       }}>
         {/* Search */}
-        <div style={{ position: 'relative', flex: 1, minWidth: '260px' }}>
+        <div style={{ position: 'relative', flex: '1 1 200px' }}>
           <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input
             type="text"
             className="input"
-            placeholder="Buscar por Nombre, OEM, Barcode, Marca o Categoría..."
+            placeholder="Buscar por Nombre, OEM, Barcode, Marca..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -298,7 +298,7 @@ export default function InventoryView({
         {/* Category Filter */}
         <select
           className="select"
-          style={{ width: '200px' }}
+          style={{ flex: '1 1 140px' }}
           value={categoryFilter}
           onChange={(e) => {
             setCategoryFilter(e.target.value);
@@ -314,7 +314,7 @@ export default function InventoryView({
         {/* Stock Filter */}
         <select
           className="select"
-          style={{ width: '180px' }}
+          style={{ flex: '1 1 130px' }}
           value={stockFilter}
           onChange={(e) => {
             setStockFilter(e.target.value);
@@ -328,12 +328,110 @@ export default function InventoryView({
         </select>
       </div>
 
-      {/* Parts Table */}
-      <div style={{
+      {/* MOBILE CARDS VIEW (Visible only on mobile <= 768px) */}
+      <div className="mobile-only" style={{ flexDirection: 'column', gap: '10px' }}>
+        {filteredParts.length === 0 ? (
+          <div className="card" style={{ textAlign: 'center', padding: '36px 16px', color: 'var(--text-muted)' }}>
+            No se encontraron repuestos con los filtros aplicados.
+          </div>
+        ) : (
+          paginatedParts.map(part => {
+            const isOut = part.stock === 0;
+            const isLow = part.stock <= part.minStock && !isOut;
+
+            return (
+              <div key={part.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                  {part.image && (
+                    <div 
+                      onClick={() => setPreviewPart(part)}
+                      style={{
+                        width: '54px',
+                        height: '54px',
+                        borderRadius: '10px',
+                        overflow: 'hidden',
+                        flexShrink: 0,
+                        border: '1px solid var(--border-color)',
+                        backgroundColor: 'var(--bg-tertiary)',
+                        cursor: 'zoom-in',
+                        position: 'relative'
+                      }}
+                      title="Ver foto"
+                    >
+                      <img src={part.image} alt={part.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <div style={{ position: 'absolute', bottom: '2px', right: '2px', background: 'rgba(0,0,0,0.6)', borderRadius: '3px', padding: '1px' }}>
+                        <Eye size={10} color="#fff" />
+                      </div>
+                    </div>
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                      <span className="mono" style={{ fontSize: '0.74rem', color: 'var(--accent-cyan)', fontWeight: 700 }}>
+                        OEM: {part.oemNumber}
+                      </span>
+                      <span className={`badge ${isOut ? 'badge-danger' : (isLow ? 'badge-warning' : 'badge-success')}`} style={{ fontSize: '0.66rem', padding: '1px 6px' }}>
+                        {isOut ? 'AGOTADO' : `${part.stock} disp.`}
+                      </span>
+                    </div>
+                    <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.25 }}>
+                      {part.name}
+                    </h4>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      {part.brand} • SKU: {part.sku} • {part.location || 'Almacén'}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '8px' }}>
+                  <div>
+                    <div style={{ fontSize: '1.15rem', fontWeight: 900, color: 'var(--primary-hover)' }}>
+                      {settings.currencySymbol}{part.salePrice.toFixed(2)}
+                    </div>
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>
+                      Costo: {settings.currencySymbol}{part.costPrice.toFixed(2)} • Taller: {settings.currencySymbol}{part.wholesalePrice.toFixed(2)}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button 
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => handleOpenStockModal(part)}
+                      title="Ajustar Stock"
+                      style={{ padding: '5px 8px', fontSize: '0.74rem', gap: '4px' }}
+                    >
+                      <RefreshCw size={12} /> Stock
+                    </button>
+                    <button 
+                      className="btn btn-secondary btn-icon btn-sm"
+                      onClick={() => handleOpenEdit(part)}
+                      title="Editar repuesto"
+                      style={{ width: '32px', height: '32px' }}
+                    >
+                      <Edit2 size={13} />
+                    </button>
+                    <button 
+                      className="btn btn-secondary btn-icon btn-sm"
+                      onClick={() => handleDelete(part.id, part.name)}
+                      title="Eliminar repuesto"
+                      style={{ width: '32px', height: '32px', color: 'var(--danger)' }}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Parts Table (Desktop view / scrollable) */}
+      <div className="desktop-only" style={{
         backgroundColor: 'var(--bg-secondary)',
         borderRadius: 'var(--radius-lg)',
         border: '1px solid var(--border-color)',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        flexDirection: 'column'
       }}>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
@@ -601,7 +699,10 @@ export default function InventoryView({
             <div style={{
               display: 'flex',
               borderBottom: '1px solid var(--border-color)',
-              backgroundColor: 'var(--bg-tertiary)'
+              backgroundColor: 'var(--bg-tertiary)',
+              overflowX: 'auto',
+              scrollbarWidth: 'none',
+              WebkitOverflowScrolling: 'touch'
             }}>
               {[
                 { id: 'info', label: '1. Información Básica' },
@@ -620,7 +721,9 @@ export default function InventoryView({
                     fontWeight: activeTab === tab.id ? 700 : 500,
                     fontSize: '0.85rem',
                     cursor: 'pointer',
-                    borderBottom: activeTab === tab.id ? '2px solid var(--primary)' : 'none'
+                    borderBottom: activeTab === tab.id ? '2px solid var(--primary)' : 'none',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0
                   }}
                 >
                   {tab.label}
@@ -633,7 +736,7 @@ export default function InventoryView({
                 {/* TAB 1: DATOS BÁSICOS */}
                 {activeTab === 'info' && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="responsive-form-grid-2">
                       <div className="input-group">
                         <label className="input-label">Código OEM / Fabricante Original *</label>
                         <input
@@ -668,7 +771,7 @@ export default function InventoryView({
                       />
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="responsive-form-grid-2">
                       <div className="input-group">
                         <label className="input-label">Marca del Repuesto *</label>
                         <input
@@ -694,7 +797,7 @@ export default function InventoryView({
                       </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="responsive-form-grid-2">
                       <div className="input-group">
                         <label className="input-label">Código de Barras</label>
                         <input
@@ -801,10 +904,8 @@ export default function InventoryView({
                       backgroundColor: 'var(--bg-tertiary)',
                       borderRadius: 'var(--radius-md)',
                       border: '1px solid var(--border-color)',
-                      display: 'grid',
-                      gridTemplateColumns: '1fr 1fr 1fr',
-                      gap: '12px'
-                    }}>
+                      marginBottom: '4px'
+                    }} className="responsive-form-grid-3">
                       <div className="input-group">
                         <label className="input-label">Costo de Compra ({settings.currencySymbol})</label>
                         <input
@@ -850,7 +951,7 @@ export default function InventoryView({
                       />
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div className="responsive-form-grid-2">
                       <div className="input-group">
                         <label className="input-label">Stock Actual en Existencia</label>
                         <input
@@ -899,7 +1000,7 @@ export default function InventoryView({
                     }}>
                       <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Vincular Nuevo Vehículo Compatible</div>
 
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                      <div className="responsive-form-grid-2">
                         <div>
                           <label className="input-label">Marca</label>
                           <select
@@ -924,7 +1025,7 @@ export default function InventoryView({
                         </div>
                       </div>
 
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                      <div className="responsive-form-grid-3">
                         <div>
                           <label className="input-label">Año Inicio</label>
                           <input

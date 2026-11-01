@@ -35,12 +35,12 @@ export default function SalesHistoryView({
   });
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }} className="animate-fade-in">
+    <div style={{ padding: 'clamp(12px, 2.5vw, 24px)', display: 'flex', flexDirection: 'column', gap: '16px' }} className="animate-fade-in">
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
         <div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: 800 }}>Ventas y Cotizaciones</h2>
-          <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+          <h2 style={{ fontSize: 'clamp(1.15rem, 3.5vw, 1.4rem)', fontWeight: 800 }}>Ventas y Cotizaciones</h2>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
             Registro histórico de tickets emitidos, facturación y proformas pendientes
           </p>
         </div>
@@ -49,27 +49,27 @@ export default function SalesHistoryView({
       {/* Filter Bar */}
       <div style={{
         backgroundColor: 'var(--bg-secondary)',
-        padding: '16px',
+        padding: '12px 14px',
         borderRadius: 'var(--radius-lg)',
         border: '1px solid var(--border-color)',
         display: 'flex',
-        gap: '12px',
+        gap: '10px',
         flexWrap: 'wrap',
         alignItems: 'center'
       }}>
-        <div style={{ position: 'relative', flex: 1, minWidth: '260px' }}>
+        <div style={{ position: 'relative', flex: '1 1 200px' }}>
           <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input
             type="text"
             className="input"
-            placeholder="Buscar por Número de Comprobante, Nombre de Cliente o Cédula..."
+            placeholder="Buscar por Comprobante, Cliente o Cédula..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{ paddingLeft: '38px' }}
           />
         </div>
 
-        <div style={{ display: 'flex', gap: '6px' }}>
+        <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
           {[
             { id: 'all', label: 'Todos' },
             { id: 'ticket', label: 'Tickets' },
@@ -79,6 +79,7 @@ export default function SalesHistoryView({
             <button
               key={f.id}
               className={`btn btn-sm ${typeFilter === f.id ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ whiteSpace: 'nowrap', flexShrink: 0 }}
               onClick={() => setTypeFilter(f.id)}
             >
               {f.label}
@@ -87,12 +88,86 @@ export default function SalesHistoryView({
         </div>
       </div>
 
-      {/* Sales Table */}
-      <div style={{
+      {/* Mobile Transaction Cards (Visible on mobile <= 768px) */}
+      <div className="mobile-only" style={{ flexDirection: 'column', gap: '10px' }}>
+        {filteredSales.length === 0 ? (
+          <div className="card" style={{ textAlign: 'center', padding: '36px 16px', color: 'var(--text-muted)' }}>
+            No se encontraron transacciones con los filtros aplicados.
+          </div>
+        ) : (
+          filteredSales.map(sale => {
+            const isProforma = sale.type === 'proforma';
+
+            return (
+              <div key={sale.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className={`badge ${isProforma ? 'badge-cyan' : (sale.type === 'factura' ? 'badge-primary' : 'badge-success')}`}>
+                      {isProforma ? 'PROFORMA' : (sale.type === 'factura' ? 'FACTURA' : 'TICKET')}
+                    </span>
+                    <span className="mono" style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '0.9rem' }}>
+                      {sale.orderNumber}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                    {new Date(sale.date).toLocaleDateString()} {new Date(sale.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderTop: '1px solid var(--border-color)', paddingTop: '8px' }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--text-primary)' }}>
+                      {sale.customer.name}
+                    </div>
+                    <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                      {sale.items.length} repuesto(s) • Método: {sale.paymentMethod === 'cash' ? 'Efectivo' : (sale.paymentMethod === 'card' ? 'Tarjeta' : (sale.paymentMethod === 'transfer' ? 'Transferencia' : (sale.paymentMethod === 'credit' ? 'Crédito' : 'Pendiente')))}
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontWeight: 900, fontSize: '1.15rem', color: 'var(--primary-hover)' }}>
+                      {settings.currencySymbol}{sale.total.toFixed(2)}
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', borderTop: '1px solid var(--border-color)', paddingTop: '8px' }}>
+                  {isProforma && (
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => {
+                        if (window.confirm(`¿Deseas convertir la cotización ${sale.orderNumber} en Venta Final y descontar el inventario?`)) {
+                          onConvertQuote(sale.id);
+                        }
+                      }}
+                      style={{ flex: 1, justifyContent: 'center', gap: '6px' }}
+                    >
+                      <FileCheck size={14} />
+                      <span>Convertir a Venta</span>
+                    </button>
+                  )}
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => onOpenReceipt(sale)}
+                    style={{ flex: isProforma ? '0 0 auto' : 1, justifyContent: 'center', gap: '6px' }}
+                  >
+                    <Printer size={15} />
+                    <span>Ver Ticket</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Desktop Sales Table */}
+      <div className="desktop-only" style={{
         backgroundColor: 'var(--bg-secondary)',
         borderRadius: 'var(--radius-lg)',
         border: '1px solid var(--border-color)',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        flexDirection: 'column'
       }}>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>

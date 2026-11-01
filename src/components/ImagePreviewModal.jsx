@@ -43,7 +43,9 @@ export default function ImagePreviewModal({ part, settings, onClose, onAddToCart
           overflow: 'hidden',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))',
+          maxHeight: '92vh',
+          overflowY: 'auto',
           position: 'relative'
         }}
       >

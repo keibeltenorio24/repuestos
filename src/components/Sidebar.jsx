@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { 
   LayoutDashboard, 
   ShoppingCart, 
@@ -7,10 +7,20 @@ import {
   FileText, 
   Settings, 
   AlertTriangle,
-  Wrench
+  Wrench,
+  X
 } from 'lucide-react';
 
-export default function Sidebar({ currentView, setCurrentView, settings, parts = [], collapsed, setCollapsed }) {
+export default function Sidebar({ 
+  currentView, 
+  setCurrentView, 
+  settings, 
+  parts = [], 
+  collapsed, 
+  setCollapsed,
+  isMobileOpen = false,
+  onCloseMobile
+}) {
   const lowStockCount = parts.filter(p => p.stock <= p.minStock).length;
 
   const navItems = [
@@ -22,74 +32,112 @@ export default function Sidebar({ currentView, setCurrentView, settings, parts =
     { id: 'settings', label: 'Configuración / Marca', icon: Settings },
   ];
 
-  return (
-    <aside style={{
-      width: collapsed ? '80px' : 'var(--sidebar-width)',
-      backgroundColor: 'var(--bg-secondary)',
-      borderRight: '1px solid var(--border-color)',
-      display: 'flex',
-      flexDirection: 'column',
-      transition: 'width 0.2s ease',
-      height: '100vh',
-      position: 'sticky',
-      top: 0,
-      zIndex: 100,
-      userSelect: 'none'
-    }}>
+  // Cerrar con Escape en móvil
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isMobileOpen && onCloseMobile) {
+        onCloseMobile();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMobileOpen, onCloseMobile]);
+
+  const handleNavClick = (viewId) => {
+    setCurrentView(viewId);
+    if (onCloseMobile) {
+      onCloseMobile();
+    }
+  };
+
+  const sidebarContent = (isMobileMode = false) => (
+    <aside 
+      style={{
+        width: isMobileMode ? '290px' : (collapsed ? '80px' : 'var(--sidebar-width)'),
+        backgroundColor: 'var(--bg-secondary)',
+        borderRight: '1px solid var(--border-color)',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'width 0.2s ease, transform 0.25s ease',
+        height: '100vh',
+        position: isMobileMode ? 'fixed' : 'sticky',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        zIndex: isMobileMode ? 9999 : 100,
+        userSelect: 'none',
+        boxShadow: isMobileMode ? '4px 0 24px rgba(0,0,0,0.6)' : 'none'
+      }}
+    >
       {/* Brand Header with Neon Logo */}
       <div style={{
-        padding: collapsed ? '14px 12px' : '16px 16px',
+        padding: (!isMobileMode && collapsed) ? '14px 12px' : '16px 16px',
         borderBottom: '1px solid var(--border-color)',
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'space-between',
         gap: '12px',
         background: 'linear-gradient(180deg, rgba(0, 229, 255, 0.06) 0%, transparent 100%)'
       }}>
-        <div style={{
-          width: '46px',
-          height: '46px',
-          borderRadius: '10px',
-          overflow: 'hidden',
-          border: '1.5px solid rgba(0, 229, 255, 0.55)',
-          boxShadow: '0 0 14px rgba(0, 229, 255, 0.35)',
-          flexShrink: 0,
-          backgroundColor: '#040711',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <img 
-            src="/logo.jpg" 
-            alt="B&G Multiservicios Logo" 
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-          />
-        </div>
-        {!collapsed && (
-          <div style={{ overflow: 'hidden' }}>
-            <h1 className="brand-title" style={{
-              fontSize: '1.05rem',
-              fontWeight: 900,
-              color: 'var(--text-primary)',
-              lineHeight: 1.15,
-              whiteSpace: 'nowrap',
-              textOverflow: 'ellipsis',
-              overflow: 'hidden'
-            }}>
-              {settings.storeName || 'B&G Multiservicios'}
-            </h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px' }}>
-              <span style={{
-                fontSize: '0.66rem',
-                fontWeight: 800,
-                color: 'var(--primary)',
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase',
-                textShadow: '0 0 10px rgba(255, 119, 0, 0.45)'
-              }}>
-                MULTISERVICIOS 2024
-              </span>
-            </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', overflow: 'hidden' }}>
+          <div style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '10px',
+            overflow: 'hidden',
+            border: '1.5px solid rgba(0, 229, 255, 0.55)',
+            boxShadow: '0 0 14px rgba(0, 229, 255, 0.35)',
+            flexShrink: 0,
+            backgroundColor: '#040711',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <img 
+              src="/logo.jpg" 
+              alt="B&G Multiservicios Logo" 
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            />
           </div>
+          {(isMobileMode || !collapsed) && (
+            <div style={{ overflow: 'hidden' }}>
+              <h1 className="brand-title" style={{
+                fontSize: '1rem',
+                fontWeight: 900,
+                color: 'var(--text-primary)',
+                lineHeight: 1.15,
+                whiteSpace: 'nowrap',
+                textOverflow: 'ellipsis',
+                overflow: 'hidden'
+              }}>
+                {settings.storeName || 'B&G Multiservicios'}
+              </h1>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px' }}>
+                <span style={{
+                  fontSize: '0.66rem',
+                  fontWeight: 800,
+                  color: 'var(--primary)',
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  textShadow: '0 0 10px rgba(255, 119, 0, 0.45)'
+                }}>
+                  MULTISERVICIOS 2024
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Close button for mobile drawer */}
+        {isMobileMode && (
+          <button 
+            className="btn btn-secondary btn-icon btn-sm"
+            onClick={onCloseMobile}
+            title="Cerrar menú"
+            style={{ flexShrink: 0, width: '34px', height: '34px' }}
+          >
+            <X size={18} />
+          </button>
         )}
       </div>
 
@@ -105,17 +153,18 @@ export default function Sidebar({ currentView, setCurrentView, settings, parts =
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentView === item.id;
+          const showFullLabel = isMobileMode || !collapsed;
 
           return (
             <button
               key={item.id}
-              onClick={() => setCurrentView(item.id)}
+              onClick={() => handleNavClick(item.id)}
               className="btn"
-              title={collapsed ? item.label : undefined}
+              title={(!isMobileMode && collapsed) ? item.label : undefined}
               style={{
                 width: '100%',
-                justifyContent: collapsed ? 'center' : 'flex-start',
-                padding: collapsed ? '12px 0' : '11px 14px',
+                justifyContent: (!isMobileMode && collapsed) ? 'center' : 'flex-start',
+                padding: (!isMobileMode && collapsed) ? '12px 0' : '11px 14px',
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: isActive ? 'var(--primary-light)' : 'transparent',
                 color: isActive ? 'var(--primary-hover)' : 'var(--text-secondary)',
@@ -138,17 +187,17 @@ export default function Sidebar({ currentView, setCurrentView, settings, parts =
               }}
             >
               <Icon size={20} style={{ flexShrink: 0 }} />
-              {!collapsed && (
+              {showFullLabel && (
                 <span style={{ flex: 1, textAlign: 'left', fontSize: '0.88rem' }}>
                   {item.label}
                 </span>
               )}
-              {!collapsed && item.badge !== undefined && (
+              {showFullLabel && item.badge !== undefined && (
                 <span className="badge badge-primary mono" style={{ fontSize: '0.7rem', padding: '2px 7px' }}>
                   {item.badge}
                 </span>
               )}
-              {!collapsed && item.highlight && (
+              {showFullLabel && item.highlight && (
                 <span style={{
                   width: '8px',
                   height: '8px',
@@ -163,7 +212,7 @@ export default function Sidebar({ currentView, setCurrentView, settings, parts =
       </nav>
 
       {/* Critical Stock Alert Box (Bottom) */}
-      {!collapsed && lowStockCount > 0 && (
+      {(isMobileMode || !collapsed) && lowStockCount > 0 && (
         <div style={{
           margin: '12px 14px',
           padding: '12px 14px',
@@ -192,26 +241,11 @@ export default function Sidebar({ currentView, setCurrentView, settings, parts =
         borderTop: '1px solid var(--border-color)',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: collapsed ? 'center' : 'space-between',
+        justifyContent: (!isMobileMode && collapsed) ? 'center' : 'space-between',
         fontSize: '0.74rem',
         color: 'var(--text-muted)'
       }}>
-        {!collapsed ? (
-          <>
-            <div>
-              <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>AutoPartes Pro</span>
-              <div>v1.0 • Listo para venta</div>
-            </div>
-            <button 
-              className="btn btn-secondary btn-sm"
-              onClick={() => setCollapsed(true)}
-              style={{ padding: '4px 8px', fontSize: '0.7rem' }}
-              title="Colapsar menú"
-            >
-              ◀
-            </button>
-          </>
-        ) : (
+        {(!isMobileMode && collapsed) ? (
           <button 
             className="btn btn-secondary btn-sm"
             onClick={() => setCollapsed(false)}
@@ -220,8 +254,46 @@ export default function Sidebar({ currentView, setCurrentView, settings, parts =
           >
             ▶
           </button>
+        ) : (
+          <>
+            <div>
+              <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>AutoPartes Pro</span>
+              <div>v1.0 • Listo para venta</div>
+            </div>
+            {!isMobileMode && (
+              <button 
+                className="btn btn-secondary btn-sm"
+                onClick={() => setCollapsed(true)}
+                style={{ padding: '4px 8px', fontSize: '0.7rem' }}
+                title="Colapsar menú"
+              >
+                ◀
+              </button>
+            )}
+          </>
         )}
       </div>
     </aside>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <div className="desktop-only" style={{ display: 'contents' }}>
+        {sidebarContent(false)}
+      </div>
+
+      {/* Mobile Drawer */}
+      {isMobileOpen && (
+        <div className="mobile-only" style={{ display: 'contents' }}>
+          <div 
+            className="drawer-backdrop" 
+            onClick={onCloseMobile}
+            aria-label="Cerrar menú"
+          />
+          {sidebarContent(true)}
+        </div>
+      )}
+    </>
   );
 }

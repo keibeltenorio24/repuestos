@@ -63,10 +63,10 @@ export default function SettingsView({ settings, onUpdateSettings, onReloadAll }
   };
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }} className="animate-fade-in">
+    <div style={{ padding: 'clamp(12px, 2.5vw, 24px)', maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }} className="animate-fade-in">
       <div>
-        <h2 style={{ fontSize: '1.4rem', fontWeight: 800 }}>Configuración de la Tienda (Marca Blanca)</h2>
-        <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+        <h2 style={{ fontSize: 'clamp(1.15rem, 3.5vw, 1.4rem)', fontWeight: 800 }}>Configuración de la Tienda (Marca Blanca)</h2>
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
           Personaliza los datos de tu cliente para comprobantes, moneda local, teléfono de WhatsApp y respaldos de base de datos.
         </p>
       </div>
@@ -92,18 +92,18 @@ export default function SettingsView({ settings, onUpdateSettings, onReloadAll }
       {/* Main Settings Form */}
       <form onSubmit={handleSubmit} style={{
         backgroundColor: 'var(--bg-secondary)',
-        padding: '24px',
+        padding: 'clamp(14px, 2.5vw, 24px)',
         borderRadius: 'var(--radius-lg)',
         border: '1px solid var(--border-color)',
         display: 'flex',
         flexDirection: 'column',
-        gap: '20px'
+        gap: '16px'
       }}>
-        <h3 style={{ fontSize: '1.1rem', fontWeight: 700, borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
+        <h3 style={{ fontSize: '1.05rem', fontWeight: 700, borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
           Datos Comerciales de la Empresa
         </h3>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <div className="responsive-form-grid-2">
           <div className="input-group">
             <label className="input-label">Nombre Comercial de la Tienda *</label>
             <input
@@ -127,7 +127,7 @@ export default function SettingsView({ settings, onUpdateSettings, onReloadAll }
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+        <div className="responsive-form-grid-3">
           <div className="input-group">
             <label className="input-label">Identificación Fiscal (RIF / NIT / RUT / RFC) *</label>
             <input
@@ -203,11 +203,11 @@ export default function SettingsView({ settings, onUpdateSettings, onReloadAll }
           </div>
         </div>
 
-        <h3 style={{ fontSize: '1.1rem', fontWeight: 700, borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', marginTop: '10px' }}>
+        <h3 style={{ fontSize: '1.05rem', fontWeight: 700, borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', marginTop: '10px' }}>
           Moneda e Impuestos
         </h3>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <div className="responsive-form-grid-2">
           <div className="input-group">
             <label className="input-label">Símbolo de Moneda ($, S/., COP, MXN, €)</label>
             <input
@@ -242,7 +242,7 @@ export default function SettingsView({ settings, onUpdateSettings, onReloadAll }
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '10px' }}>
-          <button type="submit" className="btn btn-primary btn-lg" style={{ fontWeight: 800 }}>
+          <button type="submit" className="btn btn-primary btn-lg" style={{ fontWeight: 800, width: '100%', maxWidth: '380px', justifyContent: 'center' }}>
             <Save size={18} />
             <span>Guardar Configuración de la Tienda</span>
           </button>
@@ -252,7 +252,7 @@ export default function SettingsView({ settings, onUpdateSettings, onReloadAll }
       {/* Backup & Data Administration */}
       <div style={{
         backgroundColor: 'var(--bg-secondary)',
-        padding: '24px',
+        padding: 'clamp(14px, 2.5vw, 24px)',
         borderRadius: 'var(--radius-lg)',
         border: '1px solid var(--border-color)',
         display: 'flex',

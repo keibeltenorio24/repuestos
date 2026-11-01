@@ -62,7 +62,8 @@ export default function StockAlertModal({ parts, onAdjustStock, onClose, setting
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      gap: '14px'
+                      flexWrap: 'wrap',
+                      gap: '12px'
                     }}
                   >
                     <div style={{ flex: 1 }}>

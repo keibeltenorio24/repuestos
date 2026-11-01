@@ -61,6 +61,7 @@ export default function PosView({
     }
   }, []);
 
+  const [mobileTab, setMobileTab] = useState('catalog'); // 'catalog' | 'cart'
   const [vehicleTypeFilter, setVehicleTypeFilter] = useState('all'); // all | moto | car
 
   // Filtrado de repuestos
@@ -233,16 +234,49 @@ export default function PosView({
   };
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: '1fr 430px',
-      gap: '20px',
-      padding: '20px 24px',
-      height: 'calc(100vh - var(--header-height))',
-      overflow: 'hidden'
-    }} className="animate-fade-in">
+    <div className="pos-container animate-fade-in">
+      {/* Mobile Tab Switcher (Visible only on mobile <= 900px) */}
+      <div className="mobile-only" style={{
+        display: 'flex',
+        gap: '8px',
+        backgroundColor: 'var(--bg-secondary)',
+        padding: '6px',
+        borderRadius: 'var(--radius-lg)',
+        border: '1px solid var(--border-color)',
+        width: '100%',
+        marginBottom: '6px'
+      }}>
+        <button
+          type="button"
+          className={`btn btn-sm ${mobileTab === 'catalog' ? 'btn-primary' : 'btn-secondary'}`}
+          style={{ flex: 1, padding: '9px 12px', fontWeight: 700, gap: '6px' }}
+          onClick={() => setMobileTab('catalog')}
+        >
+          <Search size={15} />
+          <span>Repuestos ({filteredParts.length})</span>
+        </button>
+        <button
+          type="button"
+          className={`btn btn-sm ${mobileTab === 'cart' ? 'btn-primary' : 'btn-secondary'}`}
+          style={{ flex: 1, padding: '9px 12px', fontWeight: 700, gap: '6px', position: 'relative' }}
+          onClick={() => setMobileTab('cart')}
+        >
+          <ShoppingCart size={15} />
+          <span>Carrito ({cart.reduce((a, b) => a + b.qty, 0)})</span>
+          {cart.length > 0 && (
+            <span style={{
+              fontWeight: 800,
+              color: mobileTab === 'cart' ? '#fff' : 'var(--primary)',
+              marginLeft: '2px'
+            }}>
+              • {settings.currencySymbol}{grandTotal.toFixed(2)}
+            </span>
+          )}
+        </button>
+      </div>
+
       {/* LEFT COLUMN: Catálogo y Búsqueda de Mostrador */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', overflow: 'hidden' }}>
+      <div className={`pos-catalog-col ${mobileTab !== 'catalog' ? 'pos-tab-hidden' : ''}`}>
         {/* Search Bar & Fast Vehicle Filter */}
         <div style={{
           display: 'flex',
@@ -310,25 +344,25 @@ export default function PosView({
         </div>
 
         {/* Vehicle Type Switcher & Categories Horizontal Scroll */}
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', overflowX: 'auto', paddingBottom: '4px', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
           <button
             className={`btn btn-sm ${vehicleTypeFilter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => setVehicleTypeFilter('all')}
-            style={{ borderRadius: 'var(--radius-full)', padding: '5px 12px', fontSize: '0.78rem' }}
+            style={{ borderRadius: 'var(--radius-full)', padding: '5px 12px', fontSize: '0.78rem', whiteSpace: 'nowrap', flexShrink: 0 }}
           >
             Todos ({parts.length})
           </button>
           <button
             className={`btn btn-sm ${vehicleTypeFilter === 'moto' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => setVehicleTypeFilter('moto')}
-            style={{ borderRadius: 'var(--radius-full)', padding: '5px 12px', fontSize: '0.78rem', fontWeight: 700 }}
+            style={{ borderRadius: 'var(--radius-full)', padding: '5px 12px', fontSize: '0.78rem', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}
           >
             🏍️ Motos (Bera, Empire, Toro, MD)
           </button>
           <button
             className={`btn btn-sm ${vehicleTypeFilter === 'car' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => setVehicleTypeFilter('car')}
-            style={{ borderRadius: 'var(--radius-full)', padding: '5px 12px', fontSize: '0.78rem', fontWeight: 700 }}
+            style={{ borderRadius: 'var(--radius-full)', padding: '5px 12px', fontSize: '0.78rem', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}
           >
             🚗 Aceites & Carros (Shell, Castrol, PDV)
           </button>
@@ -361,12 +395,12 @@ export default function PosView({
           ))}
         </div>
 
-        {/* Parts Grid */}
+        {/* Parts Grid (2 cols on mobile, auto-fill on desktop) */}
         <div style={{
           flex: 1,
           overflowY: 'auto',
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(clamp(140px, 44vw, 220px), 1fr))',
           gap: '12px',
           paddingRight: '4px'
         }}>
@@ -504,14 +538,19 @@ export default function PosView({
       </div>
 
       {/* RIGHT COLUMN: Ticket de Venta / Mostrador POS */}
-      <div style={{
-        backgroundColor: 'var(--bg-secondary)',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--border-color)',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden'
-      }}>
+      <div className={`pos-cart-col ${mobileTab !== 'cart' ? 'pos-tab-hidden' : ''}`}>
+        {/* Mobile back to catalog button */}
+        <div className="mobile-only" style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-tertiary)' }}>
+          <button 
+            type="button" 
+            onClick={() => setMobileTab('catalog')} 
+            className="btn btn-secondary btn-sm" 
+            style={{ width: '100%', justifyContent: 'center', fontWeight: 600 }}
+          >
+            ← Volver al Catálogo de Repuestos
+          </button>
+        </div>
+
         {/* Document Type Selector */}
         <div style={{
           display: 'grid',
@@ -797,6 +836,52 @@ export default function PosView({
           </button>
         </div>
       </div>
+
+      {/* Floating Mobile Cart Action Bar */}
+      {mobileTab === 'catalog' && cart.length > 0 && (
+        <div 
+          className="mobile-only"
+          onClick={() => setMobileTab('cart')}
+          style={{
+            position: 'fixed',
+            bottom: 'calc(var(--bottom-nav-height, 62px) + 8px)',
+            left: '12px',
+            right: '12px',
+            backgroundColor: 'var(--primary)',
+            color: '#ffffff',
+            padding: '12px 18px',
+            borderRadius: 'var(--radius-lg)',
+            boxShadow: '0 6px 20px var(--primary-glow)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            zIndex: 180,
+            cursor: 'pointer',
+            animation: 'fadeIn 0.2s ease'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <ShoppingCart size={20} />
+            <span style={{ fontWeight: 800, fontSize: '0.92rem' }}>
+              {cart.reduce((a, b) => a + b.qty, 0)} {cart.reduce((a, b) => a + b.qty, 0) === 1 ? 'repuesto' : 'repuestos'}
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontWeight: 900, fontSize: '1.1rem' }}>
+              {settings.currencySymbol}{grandTotal.toFixed(2)}
+            </span>
+            <span style={{
+              backgroundColor: 'rgba(255,255,255,0.25)',
+              padding: '4px 10px',
+              borderRadius: 'var(--radius-full)',
+              fontSize: '0.78rem',
+              fontWeight: 800
+            }}>
+              Ver Carrito ❯
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* MODAL DE COBRO (MÉTODOS DE PAGO Y VUELTO) */}
       {isCheckoutOpen && (
