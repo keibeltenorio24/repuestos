@@ -10,11 +10,19 @@ import {
   ShieldAlert, 
   Server, 
   Database,
-  ExternalLink
+  ExternalLink,
+  Sparkles
 } from 'lucide-react';
 import { storage } from '../services/storage';
 
-export default function SettingsView({ settings, onUpdateSettings, onReloadAll }) {
+export default function SettingsView({ 
+  settings, 
+  onUpdateSettings, 
+  onReloadAll, 
+  onClearSales,
+  onClearAllData,
+  onLoadDemoParts
+}) {
   const [formData, setFormData] = useState({ ...settings });
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -59,6 +67,42 @@ export default function SettingsView({ settings, onUpdateSettings, onReloadAll }
       storage.resetToDemo();
       onReloadAll();
       alert("Datos restablecidos a la demostración inicial.");
+    }
+  };
+
+  const handleClearSales = () => {
+    if (window.confirm("¿Deseas poner las estadísticas y ventas en CERO ($0.00) para presentar al cliente? El catálogo de repuestos se mantendrá.")) {
+      if (onClearSales) {
+        onClearSales();
+      } else {
+        storage.clearSales();
+        onReloadAll();
+      }
+      alert("¡Estadísticas y ventas puestas en cero exitosamente!");
+    }
+  };
+
+  const handleClearAllData = () => {
+    if (window.confirm("¿Deseas poner TODAS las estadísticas en cero (Alertas de stock = 0, Valor de inventario = $0.00, Catálogo = 0 SKUs, Ventas = $0.00)? El sistema quedará 100% limpio para tu cliente.")) {
+      if (onClearAllData) {
+        onClearAllData();
+      } else {
+        storage.clearAllData();
+        onReloadAll();
+      }
+      alert("¡Todas las estadísticas y datos se han puesto en cero exitosamente!");
+    }
+  };
+
+  const handleLoadDemo = () => {
+    if (window.confirm("¿Deseas cargar los 17 repuestos de demostración (motos y aceites de carro)?")) {
+      if (onLoadDemoParts) {
+        onLoadDemoParts();
+      } else {
+        storage.loadDemoData();
+        onReloadAll();
+      }
+      alert("¡Catálogo de demostración cargado con éxito!");
     }
   };
 
@@ -286,9 +330,29 @@ export default function SettingsView({ settings, onUpdateSettings, onReloadAll }
             />
           </label>
 
-          <button type="button" className="btn btn-secondary" onClick={handleResetDemo} style={{ color: 'var(--danger)' }}>
+          <button 
+            type="button" 
+            className="btn btn-secondary" 
+            onClick={handleClearAllData}
+            style={{ 
+              borderColor: 'rgba(0, 229, 255, 0.45)', 
+              color: 'var(--accent-cyan)',
+              backgroundColor: 'rgba(0, 229, 255, 0.08)',
+              fontWeight: 700
+            }}
+          >
+            <Sparkles size={16} />
+            <span>Poner TODAS las Estadísticas en Cero (Para Clientes)</span>
+          </button>
+
+          <button 
+            type="button" 
+            className="btn btn-secondary" 
+            onClick={handleLoadDemo}
+            style={{ color: 'var(--text-primary)' }}
+          >
             <RotateCcw size={16} />
-            <span>Restablecer Datos de Demostración</span>
+            <span>Cargar Catálogo Demo (17 Repuestos)</span>
           </button>
         </div>
       </div>

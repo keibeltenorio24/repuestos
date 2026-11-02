@@ -178,6 +178,11 @@ export const salesAPI = {
 
     storage.saveSales(sales);
     return quote;
+  },
+
+  async clearAll() {
+    storage.clearSales();
+    return [];
   }
 };
 

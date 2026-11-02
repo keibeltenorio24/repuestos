@@ -272,7 +272,7 @@ export default function DashboardView({
           {criticalParts.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '30px 10px', color: 'var(--text-muted)' }}>
               <CheckCircle size={36} color="var(--success)" style={{ margin: '0 auto 8px' }} />
-              <p>Inventario al 100% en niveles de stock óptimos.</p>
+              <p>Sin alertas de stock pendientes (0 repuestos críticos).</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -348,8 +348,46 @@ export default function DashboardView({
           </div>
 
           {sales.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '30px 10px', color: 'var(--text-muted)' }}>
-              <p>Aún no hay ventas registradas.</p>
+            <div style={{
+              textAlign: 'center',
+              padding: '36px 16px',
+              backgroundColor: 'var(--bg-tertiary)',
+              borderRadius: 'var(--radius-md)',
+              border: '1px dashed var(--border-color)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              <div style={{
+                width: '46px',
+                height: '46px',
+                borderRadius: '50%',
+                backgroundColor: 'rgba(0, 229, 255, 0.1)',
+                border: '1px solid rgba(0, 229, 255, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--accent-cyan)'
+              }}>
+                <CheckCircle size={22} />
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)' }}>
+                  Caja lista: $0.00 en ventas hoy
+                </div>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '4px', maxWidth: '320px', lineHeight: 1.4 }}>
+                  No hay transacciones registradas todavía. El sistema está limpio y preparado para registrar tickets y proformas en el mostrador.
+                </p>
+              </div>
+              <button 
+                className="btn btn-primary btn-sm"
+                onClick={() => onNavigate('pos')}
+                style={{ marginTop: '4px' }}
+              >
+                <ShoppingCart size={14} />
+                <span>Registrar Primera Venta (POS)</span>
+              </button>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>

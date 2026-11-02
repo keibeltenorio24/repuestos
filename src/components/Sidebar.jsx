@@ -192,7 +192,7 @@ export default function Sidebar({
                   {item.label}
                 </span>
               )}
-              {showFullLabel && item.badge !== undefined && (
+              {showFullLabel && item.badge !== undefined && item.badge > 0 && (
                 <span className="badge badge-primary mono" style={{ fontSize: '0.7rem', padding: '2px 7px' }}>
                   {item.badge}
                 </span>

@@ -134,7 +134,7 @@ export const CATEGORIES = [
   { id: "fluidos_carro", name: "Refrigerantes y Fluidos de Carro", icon: "Droplet", type: "car" }
 ];
 
-export const INITIAL_PARTS = [
+export const DEMO_PARTS = [
   // ==================== REPUESTOS DE MOTOS (MERCADO VENEZOLANO) ====================
   {
     id: "part-moto-001",
@@ -585,53 +585,6 @@ export const INITIAL_PARTS = [
   }
 ];
 
-export const INITIAL_SALES = [
-  {
-    id: "sale-moto-1001",
-    orderNumber: "TKT-001001",
-    date: new Date(Date.now() - 3600000 * 3).toISOString(),
-    type: "ticket",
-    customer: {
-      name: "Taller Motos La Bendición (SBR 150)",
-      docId: "V-20184712",
-      phone: "+58 414 234-5678",
-      email: "tallerlabendicion@gmail.com",
-      isWorkshop: true
-    },
-    items: [
-      { partId: "part-moto-001", sku: "KA-428H-BERA", name: "Kit de Arrastre Reforzado 428H Dorado", price: 12.50, qty: 2, subtotal: 25.00 },
-      { partId: "part-moto-009", sku: "AC-MOTUL-20W50", name: "Aceite 4T 20W-50 Mineral Motul 3000", price: 7.20, qty: 3, subtotal: 21.60 }
-    ],
-    subtotal: 46.60,
-    tax: 7.46,
-    discount: 0,
-    total: 54.06,
-    paymentMethod: "transfer",
-    status: "completed",
-    notes: "Cliente taller de motos aliado"
-  },
-  {
-    id: "sale-car-1002",
-    orderNumber: "TKT-001002",
-    date: new Date(Date.now() - 3600000 * 1).toISOString(),
-    type: "ticket",
-    customer: {
-      name: "Manuel Gómez (Aveo 2011)",
-      docId: "V-15894123",
-      phone: "+58 412 888-9900",
-      email: "manuel.g@gmail.com",
-      isWorkshop: false
-    },
-    items: [
-      { partId: "part-car-001", sku: "AC-SHELL-20W50-GAL", name: "Aceite de Motor para Carro 20W-50 Mineral Shell (Galón)", price: 26.00, qty: 1, subtotal: 26.00 },
-      { partId: "part-car-004", sku: "REF-PRESTONE-5050", name: "Refrigerante Coolant Prestone 50/50 (Galón)", price: 14.50, qty: 1, subtotal: 14.50 }
-    ],
-    subtotal: 40.50,
-    tax: 6.48,
-    discount: 0,
-    total: 46.98,
-    paymentMethod: "cash",
-    status: "completed",
-    notes: "Compra para cambio de aceite de carro"
-  }
-];
+export const INITIAL_PARTS = [];
+export const INITIAL_SALES = [];
+

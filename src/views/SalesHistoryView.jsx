@@ -9,14 +9,16 @@ import {
   User, 
   Calendar,
   MessageCircle,
-  FileCheck
+  FileCheck,
+  ShoppingCart
 } from 'lucide-react';
 
 export default function SalesHistoryView({ 
   sales, 
   settings, 
   onOpenReceipt, 
-  onConvertQuote 
+  onConvertQuote,
+  onNavigate 
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all'); // all | ticket | factura | proforma
@@ -91,8 +93,48 @@ export default function SalesHistoryView({
       {/* Mobile Transaction Cards (Visible on mobile <= 768px) */}
       <div className="mobile-only" style={{ flexDirection: 'column', gap: '10px' }}>
         {filteredSales.length === 0 ? (
-          <div className="card" style={{ textAlign: 'center', padding: '36px 16px', color: 'var(--text-muted)' }}>
-            No se encontraron transacciones con los filtros aplicados.
+          <div className="card" style={{ 
+            textAlign: 'center', 
+            padding: '36px 16px', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            gap: '12px',
+            backgroundColor: 'var(--bg-secondary)'
+          }}>
+            <div style={{
+              width: '46px',
+              height: '46px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(0, 229, 255, 0.1)',
+              border: '1px solid rgba(0, 229, 255, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--accent-cyan)'
+            }}>
+              <CheckCircle2 size={22} />
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)' }}>
+                {sales.length === 0 ? 'Historial limpio: 0 ventas registradas' : 'No se encontraron transacciones'}
+              </div>
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '4px', maxWidth: '300px', lineHeight: 1.4 }}>
+                {sales.length === 0 
+                  ? 'El sistema está preparado para registrar nuevas ventas. Al cobrar en el Mostrador POS, los comprobantes aparecerán aquí.' 
+                  : 'Prueba cambiando los filtros o el término de búsqueda.'}
+              </p>
+            </div>
+            {sales.length === 0 && onNavigate && (
+              <button 
+                className="btn btn-primary btn-sm" 
+                onClick={() => onNavigate('pos')}
+                style={{ marginTop: '4px' }}
+              >
+                <ShoppingCart size={14} />
+                <span>Ir al Mostrador POS</span>
+              </button>
+            )}
           </div>
         ) : (
           filteredSales.map(sale => {
@@ -185,8 +227,40 @@ export default function SalesHistoryView({
             <tbody>
               {filteredSales.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-                    No se encontraron transacciones.
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '50px 20px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                      <div style={{
+                        width: '46px',
+                        height: '46px',
+                        borderRadius: '50%',
+                        backgroundColor: 'rgba(0, 229, 255, 0.1)',
+                        border: '1px solid rgba(0, 229, 255, 0.3)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--accent-cyan)'
+                      }}>
+                        <CheckCircle2 size={22} />
+                      </div>
+                      <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>
+                        {sales.length === 0 ? 'Historial limpio: 0 ventas registradas' : 'No se encontraron transacciones'}
+                      </div>
+                      <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', maxWidth: '420px', lineHeight: 1.4 }}>
+                        {sales.length === 0 
+                          ? 'El historial de ventas está en cero y listo para operar. Cuando emitas tickets, facturas o cotizaciones en el mostrador POS aparecerán registradas aquí con su comprobante.' 
+                          : 'No hay transacciones que coincidan con la búsqueda o filtro seleccionado.'}
+                      </p>
+                      {sales.length === 0 && onNavigate && (
+                        <button 
+                          className="btn btn-primary btn-sm" 
+                          onClick={() => onNavigate('pos')}
+                          style={{ marginTop: '4px' }}
+                        >
+                          <ShoppingCart size={14} />
+                          <span>Ir al Mostrador POS</span>
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ) : (

@@ -17,7 +17,8 @@ import {
   Tag,
   MapPin,
   Check,
-  Eye
+  Eye,
+  Package
 } from 'lucide-react';
 import { CATEGORIES } from '../data/mockData';
 import ImagePreviewModal from '../components/ImagePreviewModal';
@@ -28,7 +29,9 @@ export default function PosView({
   vehicles, 
   activeVehicle, 
   setActiveVehicle,
-  onCompleteSale 
+  onCompleteSale,
+  onNavigate,
+  onLoadDemoParts
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -406,9 +409,31 @@ export default function PosView({
         }}>
           {filteredParts.length === 0 ? (
             <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-              <AlertCircle size={44} style={{ margin: '0 auto 10px', opacity: 0.5 }} />
-              <h3>No se encontraron repuestos</h3>
-              <p style={{ fontSize: '0.85rem' }}>Intenta con otro código OEM, nombre o elimina el filtro de vehículo.</p>
+              <Package size={44} style={{ margin: '0 auto 10px', opacity: 0.5, color: 'var(--accent-cyan)' }} />
+              <h3>{parts.length === 0 ? 'Catálogo en Cero' : 'No se encontraron repuestos'}</h3>
+              <p style={{ fontSize: '0.85rem', maxWidth: '380px', margin: '6px auto 14px' }}>
+                {parts.length === 0 
+                  ? 'Aún no hay repuestos cargados en el inventario. Registra repuestos para comenzar a cobrar en mostrador.' 
+                  : 'Intenta con otro código OEM, nombre o elimina el filtro de vehículo.'}
+              </p>
+              {parts.length === 0 && (
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  {onNavigate && (
+                    <button className="btn btn-primary btn-sm" onClick={() => onNavigate('inventory')}>
+                      <span>Ir a Inventario de Repuestos</span>
+                    </button>
+                  )}
+                  {onLoadDemoParts && (
+                    <button 
+                      className="btn btn-secondary btn-sm" 
+                      onClick={onLoadDemoParts}
+                      style={{ color: 'var(--accent-cyan)', borderColor: 'rgba(0, 229, 255, 0.4)' }}
+                    >
+                      <span>Cargar Demo (17 SKUs)</span>
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             filteredParts.map(part => {

@@ -1,8 +1,8 @@
-import { INITIAL_PARTS, INITIAL_SALES, INITIAL_SETTINGS, VEHICLE_DATABASE } from '../data/mockData';
+import { INITIAL_PARTS, INITIAL_SALES, INITIAL_SETTINGS, VEHICLE_DATABASE, DEMO_PARTS } from '../data/mockData';
 
 const STORAGE_KEYS = {
-  PARTS: 'bgmultiservicios_parts_v4',
-  SALES: 'bgmultiservicios_sales_v3',
+  PARTS: 'bgmultiservicios_parts_clean_v1',
+  SALES: 'bgmultiservicios_sales_clean_v1',
   SETTINGS: 'bgmultiservicios_settings_v3',
   VEHICLES: 'bgmultiservicios_vehicles_v3',
   THEME: 'bgmultiservicios_theme_v3'
@@ -11,6 +11,13 @@ const STORAGE_KEYS = {
 export const storage = {
   // Inicialización de datos
   init() {
+    // Limpiar claves anteriores para garantizar datos en cero
+    localStorage.removeItem('bgmultiservicios_parts_v4');
+    localStorage.removeItem('bgmultiservicios_parts_v3');
+    localStorage.removeItem('bgmultiservicios_parts_v2');
+    localStorage.removeItem('bgmultiservicios_sales_v3');
+    localStorage.removeItem('bgmultiservicios_sales_v2');
+
     if (!localStorage.getItem(STORAGE_KEYS.PARTS)) {
       localStorage.setItem(STORAGE_KEYS.PARTS, JSON.stringify(INITIAL_PARTS));
     }
@@ -30,18 +37,9 @@ export const storage = {
     this.init();
     try {
       const raw = localStorage.getItem(STORAGE_KEYS.PARTS);
-      const stored = raw ? JSON.parse(raw) : INITIAL_PARTS;
-      const updated = (stored && stored.length > 0 ? stored : INITIAL_PARTS).map(p => {
-        const match = INITIAL_PARTS.find(ip => ip.id === p.id || ip.sku === p.sku);
-        return {
-          ...p,
-          image: p.image || match?.image || '/products/kit_arrastre.jpg'
-        };
-      });
-      localStorage.setItem(STORAGE_KEYS.PARTS, JSON.stringify(updated));
-      return updated;
+      return raw ? JSON.parse(raw) : [];
     } catch {
-      return INITIAL_PARTS;
+      return [];
     }
   },
 
@@ -61,6 +59,14 @@ export const storage = {
 
   saveSales(sales) {
     localStorage.setItem(STORAGE_KEYS.SALES, JSON.stringify(sales));
+  },
+
+  // Poner estadísticas y ventas a cero (para presentación a clientes)
+  clearSales() {
+    localStorage.setItem(STORAGE_KEYS.SALES, JSON.stringify([]));
+    localStorage.removeItem('bgmultiservicios_sales_v3');
+    localStorage.removeItem('bgmultiservicios_sales_v2');
+    return [];
   },
 
   // Configuración de la tienda (Marca blanca)
@@ -140,10 +146,23 @@ export const storage = {
     }
   },
 
+  // Cargar Catálogo de Demostración
+  loadDemoData() {
+    localStorage.setItem(STORAGE_KEYS.PARTS, JSON.stringify(DEMO_PARTS));
+    return DEMO_PARTS;
+  },
+
+  // Limpiar toda la base de datos a Cero (Para entrega limpia a clientes)
+  clearAllData() {
+    localStorage.setItem(STORAGE_KEYS.PARTS, JSON.stringify([]));
+    localStorage.setItem(STORAGE_KEYS.SALES, JSON.stringify([]));
+    return { parts: [], sales: [] };
+  },
+
   // Restablecer Datos de Demostración
   resetToDemo() {
-    localStorage.setItem(STORAGE_KEYS.PARTS, JSON.stringify(INITIAL_PARTS));
-    localStorage.setItem(STORAGE_KEYS.SALES, JSON.stringify(INITIAL_SALES));
+    localStorage.setItem(STORAGE_KEYS.PARTS, JSON.stringify(DEMO_PARTS));
+    localStorage.setItem(STORAGE_KEYS.SALES, JSON.stringify([]));
     localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(INITIAL_SETTINGS));
     localStorage.setItem(STORAGE_KEYS.VEHICLES, JSON.stringify(VEHICLE_DATABASE));
   }

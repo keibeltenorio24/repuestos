@@ -93,6 +93,22 @@ export default function App() {
     setActiveReceiptSale(converted);
   };
 
+  const handleClearSales = async () => {
+    await salesAPI.clearAll();
+    setSales([]);
+  };
+
+  const handleLoadDemoParts = () => {
+    storage.loadDemoData();
+    setParts(storage.getParts());
+  };
+
+  const handleClearAllData = () => {
+    storage.clearAllData();
+    setParts([]);
+    setSales([]);
+  };
+
   // Acciones de Configuración
   const handleUpdateSettings = async (newSettings) => {
     await settingsAPI.update(newSettings);
@@ -156,6 +172,8 @@ export default function App() {
               activeVehicle={activeVehicle}
               setActiveVehicle={setActiveVehicle}
               onCompleteSale={handleCompleteSale}
+              onNavigate={(view) => setCurrentView(view)}
+              onLoadDemoParts={handleLoadDemoParts}
             />
           )}
 
@@ -168,6 +186,7 @@ export default function App() {
               onUpdatePart={handleUpdatePart}
               onDeletePart={handleDeletePart}
               onAdjustStock={handleAdjustStock}
+              onLoadDemoParts={handleLoadDemoParts}
             />
           )}
 
@@ -187,6 +206,7 @@ export default function App() {
               settings={settings}
               onOpenReceipt={(sale) => setActiveReceiptSale(sale)}
               onConvertQuote={handleConvertQuote}
+              onNavigate={(view) => setCurrentView(view)}
             />
           )}
 
@@ -195,6 +215,9 @@ export default function App() {
               settings={settings}
               onUpdateSettings={handleUpdateSettings}
               onReloadAll={loadData}
+              onClearSales={handleClearSales}
+              onClearAllData={handleClearAllData}
+              onLoadDemoParts={handleLoadDemoParts}
             />
           )}
         </main>

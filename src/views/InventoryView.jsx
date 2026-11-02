@@ -17,7 +17,8 @@ import {
   TrendingUp,
   RefreshCw,
   Eye,
-  Camera
+  Camera,
+  Sparkles
 } from 'lucide-react';
 import { CATEGORIES } from '../data/mockData';
 import ImagePreviewModal from '../components/ImagePreviewModal';
@@ -29,7 +30,8 @@ export default function InventoryView({
   onCreatePart,
   onUpdatePart,
   onDeletePart,
-  onAdjustStock
+  onAdjustStock,
+  onLoadDemoParts
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -331,8 +333,58 @@ export default function InventoryView({
       {/* MOBILE CARDS VIEW (Visible only on mobile <= 768px) */}
       <div className="mobile-only" style={{ flexDirection: 'column', gap: '10px' }}>
         {filteredParts.length === 0 ? (
-          <div className="card" style={{ textAlign: 'center', padding: '36px 16px', color: 'var(--text-muted)' }}>
-            No se encontraron repuestos con los filtros aplicados.
+          <div className="card" style={{ 
+            textAlign: 'center', 
+            padding: '36px 16px', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            gap: '12px',
+            backgroundColor: 'var(--bg-secondary)'
+          }}>
+            <div style={{
+              width: '46px',
+              height: '46px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(0, 229, 255, 0.1)',
+              border: '1px solid rgba(0, 229, 255, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--accent-cyan)'
+            }}>
+              <Package size={22} />
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)' }}>
+                {parts.length === 0 ? 'Catálogo en Cero: 0 repuestos registrados' : 'No se encontraron repuestos'}
+              </div>
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '4px', maxWidth: '300px', lineHeight: 1.4 }}>
+                {parts.length === 0 
+                  ? 'El inventario está limpio para registrar los repuestos de tu cliente o cargar la muestra de prueba.' 
+                  : 'Prueba cambiando los filtros de búsqueda o categoría.'}
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', width: '100%', marginTop: '4px' }}>
+              <button 
+                className="btn btn-primary btn-sm" 
+                onClick={handleOpenCreate}
+                style={{ flex: '1 1 140px', justifyContent: 'center' }}
+              >
+                <Plus size={14} />
+                <span>+ Nuevo Repuesto</span>
+              </button>
+              {parts.length === 0 && onLoadDemoParts && (
+                <button 
+                  className="btn btn-secondary btn-sm" 
+                  onClick={onLoadDemoParts}
+                  style={{ flex: '1 1 140px', justifyContent: 'center', color: 'var(--accent-cyan)', borderColor: 'rgba(0, 229, 255, 0.4)' }}
+                >
+                  <Sparkles size={14} />
+                  <span>Cargar Demo (17 SKUs)</span>
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           paginatedParts.map(part => {
@@ -449,8 +501,46 @@ export default function InventoryView({
             <tbody>
               {filteredParts.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-                    No se encontraron repuestos con los filtros aplicados.
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '50px 20px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                      <div style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '50%',
+                        backgroundColor: 'rgba(0, 229, 255, 0.1)',
+                        border: '1px solid rgba(0, 229, 255, 0.3)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--accent-cyan)'
+                      }}>
+                        <Package size={24} />
+                      </div>
+                      <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--text-primary)' }}>
+                        {parts.length === 0 ? 'Catálogo en Cero: 0 repuestos registrados' : 'No se encontraron repuestos con los filtros aplicados'}
+                      </div>
+                      <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', maxWidth: '420px', lineHeight: 1.4 }}>
+                        {parts.length === 0 
+                          ? 'El inventario está completamente limpio. Puedes comenzar a registrar los repuestos de tu cliente o cargar la muestra de demostración.' 
+                          : 'Prueba buscando con otro término, marca o código OEM.'}
+                      </p>
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+                        <button className="btn btn-primary btn-sm" onClick={handleOpenCreate}>
+                          <Plus size={14} />
+                          <span>+ Registrar Primer Repuesto</span>
+                        </button>
+                        {parts.length === 0 && onLoadDemoParts && (
+                          <button 
+                            className="btn btn-secondary btn-sm" 
+                            onClick={onLoadDemoParts}
+                            style={{ color: 'var(--accent-cyan)', borderColor: 'rgba(0, 229, 255, 0.4)' }}
+                          >
+                            <Sparkles size={14} />
+                            <span>Cargar Muestra de Demostración</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </td>
                 </tr>
               ) : (
