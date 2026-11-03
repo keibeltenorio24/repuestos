@@ -86,7 +86,10 @@ export default function PublicCatalogView({
     setCart(updated);
   };
 
-  const totalCart = cart.reduce((acc, item) => acc + (item.salePrice * item.qty), 0);
+  const taxRate = Number(settings.taxRate) > 0 ? Number(settings.taxRate) : 16;
+  const subtotalCart = cart.reduce((acc, item) => acc + (item.salePrice * item.qty), 0);
+  const taxCart = (subtotalCart * taxRate) / 100;
+  const totalCart = subtotalCart + taxCart;
 
   // Generar y enviar pedido por WhatsApp
   const handleSendWhatsAppOrder = () => {
@@ -104,10 +107,12 @@ export default function PublicCatalogView({
     cart.forEach((item, idx) => {
       msg += `${idx + 1}. *${item.qty}x* ${item.name}\n`;
       msg += `   • Marca: ${item.brand} | OEM: ${item.oemNumber}\n`;
-      msg += `   • Precio ref.: ${settings.currencySymbol}${(item.salePrice * item.qty).toFixed(2)}\n`;
+      msg += `   • Subtotal: ${settings.currencySymbol}${(item.salePrice * item.qty).toFixed(2)}\n`;
     });
 
-    msg += `\n💰 *Total estimado:* ${settings.currencySymbol}${totalCart.toFixed(2)}\n`;
+    msg += `\n• *Subtotal (Sin IVA):* ${settings.currencySymbol}${subtotalCart.toFixed(2)}`;
+    msg += `\n• *+ IVA (${taxRate}%):* +${settings.currencySymbol}${taxCart.toFixed(2)}`;
+    msg += `\n💰 *TOTAL CON IVA:* ${settings.currencySymbol}${totalCart.toFixed(2)}\n`;
     msg += `\n¿Tienen entrega inmediata en tienda o envíos? ¡Muchas gracias!`;
 
     const encoded = encodeURIComponent(msg);
@@ -477,9 +482,19 @@ export default function PublicCatalogView({
               )}
             </div>
 
-            <div className="modal-footer" style={{ flexDirection: 'column', gap: '10px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '1.1rem', fontWeight: 800 }}>
-                <span>Total Estimado:</span>
+            <div className="modal-footer" style={{ flexDirection: 'column', gap: '8px' }}>
+              <div style={{ width: '100%', fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Subtotal (Sin IVA):</span>
+                  <span>{settings.currencySymbol}{subtotalCart.toFixed(2)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--accent-cyan)', fontWeight: 600 }}>
+                  <span>+ IVA ({taxRate}%):</span>
+                  <span>+{settings.currencySymbol}{taxCart.toFixed(2)}</span>
+                </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '1.1rem', fontWeight: 800, borderTop: '1px dashed var(--border-color)', paddingTop: '6px' }}>
+                <span>Total (IVA Incluido):</span>
                 <span style={{ color: 'var(--primary-hover)' }}>{settings.currencySymbol}{totalCart.toFixed(2)}</span>
               </div>
 

@@ -183,11 +183,12 @@ export default function PosView({
     }
   };
 
-  // Cálculos de totales
+  // Cálculos de totales con IVA desglosado
+  const effectiveTaxRate = Number(settings.taxRate) > 0 ? Number(settings.taxRate) : 16;
   const subtotal = cart.reduce((acc, item) => acc + item.subtotal, 0);
   const discountAmount = (subtotal * discountPercent) / 100;
   const taxableBase = Math.max(0, subtotal - discountAmount);
-  const taxAmount = (taxableBase * (settings.taxRate || 0)) / 100;
+  const taxAmount = (taxableBase * effectiveTaxRate) / 100;
   const grandTotal = taxableBase + taxAmount;
 
   // Finalizar cobro
@@ -213,6 +214,9 @@ export default function PosView({
       })),
       subtotal,
       discount: discountAmount,
+      discountPercent,
+      taxableBase,
+      taxRate: effectiveTaxRate,
       tax: taxAmount,
       total: grandTotal,
       paymentMethod: docType === 'proforma' ? 'pending' : paymentMethod,
@@ -624,15 +628,26 @@ export default function PosView({
               placeholder="Nombre del Cliente / Taller..."
               value={customer.name}
               onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
-              style={{ fontSize: '0.82rem', padding: '6px 10px' }}
+              style={{ fontSize: '0.82rem', padding: '6px 10px', flex: 1 }}
             />
             <input
               type="text"
               className="input"
-              placeholder="Cédula / RIF / NIT"
+              placeholder="Cédula / RIF"
               value={customer.docId}
               onChange={(e) => setCustomer({ ...customer, docId: e.target.value })}
-              style={{ width: '130px', fontSize: '0.82rem', padding: '6px 10px' }}
+              style={{ width: '115px', fontSize: '0.82rem', padding: '6px 10px' }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <input
+              type="tel"
+              className="input"
+              placeholder="WhatsApp del Cliente (ej: +58 412 1234567)"
+              value={customer.phone}
+              onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
+              style={{ fontSize: '0.8rem', padding: '5px 10px', flex: 1 }}
             />
           </div>
 
@@ -782,10 +797,10 @@ export default function PosView({
           flexDirection: 'column',
           gap: '10px'
         }}>
-          {/* Subtotal, Descuento, IVA */}
+          {/* Subtotal, Descuento, Base Imponible, IVA */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.82rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-              <span>Subtotal:</span>
+              <span>Subtotal (Sin IVA):</span>
               <span>{settings.currencySymbol}{subtotal.toFixed(2)}</span>
             </div>
 
@@ -805,9 +820,22 @@ export default function PosView({
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
-              <span>IVA ({settings.taxRate}%):</span>
-              <span>{settings.currencySymbol}{taxAmount.toFixed(2)}</span>
+            {discountAmount > 0 && (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--danger)' }}>
+                  <span>Descuento aplicado ({discountPercent}%):</span>
+                  <span>-{settings.currencySymbol}{discountAmount.toFixed(2)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                  <span>Base Imponible:</span>
+                  <span>{settings.currencySymbol}{taxableBase.toFixed(2)}</span>
+                </div>
+              </>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--accent-cyan)', fontWeight: 600 }}>
+              <span>+ IVA ({effectiveTaxRate}%):</span>
+              <span>+{settings.currencySymbol}{taxAmount.toFixed(2)}</span>
             </div>
 
             <div style={{
@@ -818,8 +846,8 @@ export default function PosView({
               borderTop: '1px dashed var(--border-color)',
               marginTop: '4px'
             }}>
-              <span style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-primary)' }}>
-                TOTAL:
+              <span style={{ fontWeight: 800, fontSize: '0.98rem', color: 'var(--text-primary)' }}>
+                TOTAL (IVA INCL.):
               </span>
               <span style={{ fontWeight: 900, fontSize: '1.5rem', color: 'var(--primary-hover)' }}>
                 {settings.currencySymbol}{grandTotal.toFixed(2)}
@@ -924,10 +952,26 @@ export default function PosView({
             </div>
 
             <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div style={{ textAlign: 'center', padding: '10px 0' }}>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Monto Total a Cobrar</div>
-                <div style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--primary-hover)' }}>
-                  {settings.currencySymbol}{grandTotal.toFixed(2)}
+              <div style={{
+                textAlign: 'center',
+                padding: '12px 16px',
+                backgroundColor: 'var(--bg-tertiary)',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border-color)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>
+                  <span>Base Imponible:</span>
+                  <span>{settings.currencySymbol}{taxableBase.toFixed(2)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--accent-cyan)', fontWeight: 600, marginBottom: '8px' }}>
+                  <span>+ IVA ({effectiveTaxRate}%):</span>
+                  <span>+{settings.currencySymbol}{taxAmount.toFixed(2)}</span>
+                </div>
+                <div style={{ borderTop: '1px dashed var(--border-color)', paddingTop: '8px' }}>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Monto Total a Cobrar (IVA Incluido)</div>
+                  <div style={{ fontSize: '2.1rem', fontWeight: 900, color: 'var(--primary-hover)', lineHeight: 1.15 }}>
+                    {settings.currencySymbol}{grandTotal.toFixed(2)}
+                  </div>
                 </div>
               </div>
 

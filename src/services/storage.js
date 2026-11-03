@@ -74,8 +74,16 @@ export const storage = {
     this.init();
     try {
       const stored = JSON.parse(localStorage.getItem(STORAGE_KEYS.SETTINGS)) || INITIAL_SETTINGS;
+      let updated = false;
       if (!stored.logoUrl) {
         stored.logoUrl = '/logo.jpg';
+        updated = true;
+      }
+      if (stored.taxRate === undefined || stored.taxRate === null || Number(stored.taxRate) <= 0) {
+        stored.taxRate = INITIAL_SETTINGS.taxRate || 16;
+        updated = true;
+      }
+      if (updated) {
         localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(stored));
       }
       return stored;

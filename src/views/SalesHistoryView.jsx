@@ -170,6 +170,9 @@ export default function SalesHistoryView({
                     <div style={{ fontWeight: 900, fontSize: '1.15rem', color: 'var(--primary-hover)' }}>
                       {settings.currencySymbol}{sale.total.toFixed(2)}
                     </div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                      IVA: +{settings.currencySymbol}{(Number(sale.tax) || 0).toFixed(2)} incl.
+                    </div>
                   </div>
                 </div>
 
@@ -193,8 +196,8 @@ export default function SalesHistoryView({
                     onClick={() => onOpenReceipt(sale)}
                     style={{ flex: isProforma ? '0 0 auto' : 1, justifyContent: 'center', gap: '6px' }}
                   >
-                    <Printer size={15} />
-                    <span>Ver Ticket</span>
+                    <MessageCircle size={15} color="#10b981" />
+                    <span>Factura PDF / WhatsApp</span>
                   </button>
                 </div>
               </div>
@@ -332,7 +335,7 @@ export default function SalesHistoryView({
                           {settings.currencySymbol}{sale.total.toFixed(2)}
                         </div>
                         <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                          IVA incl.
+                          Base: {settings.currencySymbol}{(Number(sale.subtotal || 0) - Number(sale.discount || 0)).toFixed(2)} + IVA: {settings.currencySymbol}{(Number(sale.tax) || 0).toFixed(2)}
                         </div>
                       </td>
 
@@ -355,11 +358,13 @@ export default function SalesHistoryView({
                             </button>
                           )}
                           <button
-                            className="btn btn-secondary btn-icon btn-sm"
+                            className="btn btn-secondary btn-sm"
                             onClick={() => onOpenReceipt(sale)}
-                            title="Ver / Reimprimir Comprobante"
+                            title="Ver Factura / Descargar PDF / Enviar por WhatsApp"
+                            style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.75rem' }}
                           >
-                            <Printer size={14} />
+                            <MessageCircle size={14} color="#10b981" />
+                            <span>PDF / WhatsApp</span>
                           </button>
                         </div>
                       </td>
