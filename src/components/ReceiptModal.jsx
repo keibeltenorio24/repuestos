@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import { 
@@ -9,7 +9,10 @@ import {
   FileText, 
   Image as ImageIcon, 
   Download, 
-  Phone
+  Share2,
+  Phone,
+  Copy,
+  Check
 } from 'lucide-react';
 
 export default function ReceiptModal({ sale, settings, onClose }) {
@@ -18,105 +21,76 @@ export default function ReceiptModal({ sale, settings, onClose }) {
   const [customerPhone, setCustomerPhone] = useState(sale?.customer?.phone || '');
   const [isGenerating, setIsGenerating] = useState(false);
   const [statusNotice, setStatusNotice] = useState(null);
+  const [copiedImage, setCopiedImage] = useState(false);
 
-  if (!sale) return null;
+  // Archivos pre-generados en memoria para que al hacer clic en Enviar/Compartir sea instantáneo
+  const [preparedFiles, setPreparedFiles] = useState({
+    pdfBlob: null,
+    pdfFile: null,
+    pdfName: '',
+    imgBlob: null,
+    imgFile: null,
+    imgName: ''
+  });
 
-  const isProforma = sale.type === 'proforma';
+  const isProforma = sale?.type === 'proforma';
   const typeLabel = isProforma 
     ? 'COTIZACIÓN / PROFORMA' 
-    : (sale.type === 'factura' ? 'FACTURA DE VENTA' : 'TICKET DE CAJA');
+    : (sale?.type === 'factura' ? 'FACTURA DE VENTA' : 'TICKET DE CAJA');
 
-  const docPrefix = isProforma ? 'Proforma' : (sale.type === 'factura' ? 'Factura' : 'Ticket');
+  const docPrefix = isProforma ? 'Proforma' : (sale?.type === 'factura' ? 'Factura' : 'Ticket');
 
-  // Cálculo garantizado del desglose con IVA para que siempre se sume y se muestre desglosado
-  const taxRate = Number(sale.taxRate) > 0 
+  // Cálculo garantizado del desglose con IVA sumado al total
+  const taxRate = Number(sale?.taxRate) > 0 
     ? Number(sale.taxRate) 
-    : (Number(settings.taxRate) > 0 ? Number(settings.taxRate) : 16);
+    : (Number(settings?.taxRate) > 0 ? Number(settings.taxRate) : 16);
 
-  const rawSubtotal = Number(sale.subtotal) > 0
+  const rawSubtotal = Number(sale?.subtotal) > 0
     ? Number(sale.subtotal)
-    : sale.items.reduce((acc, item) => acc + (Number(item.subtotal) || (item.qty * item.price)), 0);
+    : (sale?.items || []).reduce((acc, item) => acc + (Number(item.subtotal) || (item.qty * item.price)), 0);
 
-  const discountAmount = Number(sale.discount) || 0;
+  const discountAmount = Number(sale?.discount) || 0;
   const taxableBase = Math.max(0, rawSubtotal - discountAmount);
-  const taxAmount = Number(sale.tax) > 0 
+  const taxAmount = Number(sale?.tax) > 0 
     ? Number(sale.tax) 
     : (taxableBase * taxRate) / 100;
   const finalTotal = taxableBase + taxAmount;
 
-  const paymentMethodLabel = sale.paymentMethod === 'cash' 
+  const paymentMethodLabel = sale?.paymentMethod === 'cash' 
     ? 'Efectivo' 
-    : (sale.paymentMethod === 'card' 
+    : (sale?.paymentMethod === 'card' 
       ? 'Tarjeta / Punto' 
-      : (sale.paymentMethod === 'transfer' 
+      : (sale?.paymentMethod === 'transfer' 
         ? 'Transferencia / Pago Móvil' 
-        : (sale.paymentMethod === 'credit' ? 'Crédito' : 'Pendiente')));
+        : (sale?.paymentMethod === 'credit' ? 'Crédito' : 'Pendiente')));
 
-  const handlePrint = () => {
-    window.print();
-  };
+  // Función que captura el comprobante exacto del sistema y genera tanto el PDF como la Foto PNG
+  const buildInvoiceFiles = useCallback(async () => {
+    if (!receiptRef.current || !sale) return null;
 
-  // Construir mensaje de WhatsApp con todo el desglose completo incluyendo IVA
-  const buildWhatsAppMessage = () => {
-    const cur = settings.currencySymbol || '$';
-    let msg = `*${settings.storeName}*\n`;
-    if (settings.legalName) msg += `${settings.legalName}\n`;
-    if (settings.taxId) msg += `RIF: ${settings.taxId}\n`;
-    msg += `━━━━━━━━━━━━━━━━━━━━\n`;
-    msg += `📄 *${typeLabel}*\n`;
-    msg += `🔢 *N° Control:* ${sale.orderNumber}\n`;
-    msg += `📅 *Fecha:* ${new Date(sale.date).toLocaleDateString()} ${new Date(sale.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}\n`;
-    msg += `💳 *Forma de Pago:* ${paymentMethodLabel}\n`;
-    msg += `👤 *Cliente:* ${sale.customer.name}\n`;
-    msg += `🪪 *C.I. / RIF:* ${sale.customer.docId || 'Consumidor Final'}\n`;
-    if (customerPhone) msg += `📱 *Tel:* ${customerPhone}\n`;
-    msg += `━━━━━━━━━━━━━━━━━━━━\n`;
-    msg += `*DETALLE DE REPUESTOS:*\n`;
+    // Esperar a que las imágenes dentro del comprobante (ej. logo) estén cargadas
+    const imgs = Array.from(receiptRef.current.querySelectorAll('img'));
+    await Promise.all(
+      imgs.map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(res => {
+          img.onload = res;
+          img.onerror = res;
+        });
+      })
+    );
 
-    sale.items.forEach((item, index) => {
-      const itemSub = Number(item.subtotal) || (item.qty * item.price);
-      msg += `${index + 1}. *${item.qty}x* ${item.name} _(SKU: ${item.sku})_\n`;
-      msg += `   P. Unit: ${cur}${Number(item.price).toFixed(2)} ➔ *${cur}${itemSub.toFixed(2)}*\n`;
-    });
-
-    msg += `━━━━━━━━━━━━━━━━━━━━\n`;
-    msg += `*DESGLOSE DE FACTURACIÓN:*\n`;
-    msg += `• Subtotal (Sin IVA): ${cur}${rawSubtotal.toFixed(2)}\n`;
-    if (discountAmount > 0) {
-      msg += `• Descuento Aplicado: -${cur}${discountAmount.toFixed(2)}\n`;
-    }
-    msg += `• Base Imponible: ${cur}${taxableBase.toFixed(2)}\n`;
-    msg += `• *+ IVA (${taxRate}%):* +${cur}${taxAmount.toFixed(2)}\n`;
-    msg += `━━━━━━━━━━━━━━━━━━━━\n`;
-    msg += `💰 *TOTAL A PAGAR (IVA INCLUIDO): ${cur}${finalTotal.toFixed(2)}*\n`;
-    msg += `━━━━━━━━━━━━━━━━━━━━\n`;
-
-    if (isProforma) {
-      msg += `_Cotización válida por 5 días sujeta a disponibilidad de stock._\n`;
-    } else {
-      msg += `_¡Gracias por su compra en ${settings.storeName}!_`;
-    }
-
-    return msg;
-  };
-
-  // Capturar el comprobante tal cual como se ve en el sistema
-  const captureReceiptCanvas = async () => {
-    if (!receiptRef.current) throw new Error('No se encontró el comprobante');
-    return await html2canvas(receiptRef.current, {
+    const canvas = await html2canvas(receiptRef.current, {
       scale: 3,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
       logging: false
     });
-  };
 
-  // Generar archivo PDF tal cual como sale en sistema
-  const generatePdfFile = async () => {
-    const canvas = await captureReceiptCanvas();
+    // 1. Generar PDF idéntico a la vista del sistema
     const imgData = canvas.toDataURL('image/png');
-    const pdfWidth = 88; // Ancho de factura/comprobante en mm con proporción exacta
+    const pdfWidth = 88; // mm
     const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
     const pdf = new jsPDF({
@@ -127,20 +101,43 @@ export default function ReceiptModal({ sale, settings, onClose }) {
 
     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
     const pdfBlob = pdf.output('blob');
-    const fileName = `${docPrefix}_${sale.orderNumber}.pdf`;
-    const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
+    const pdfName = `${docPrefix}_${sale.orderNumber}.pdf`;
+    const pdfFile = new File([pdfBlob], pdfName, { type: 'application/pdf' });
 
-    return { pdf, pdfBlob, pdfFile, fileName };
+    // 2. Generar Foto PNG idéntica a la vista del sistema
+    const imgBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png', 1.0));
+    const imgName = `${docPrefix}_${sale.orderNumber}.png`;
+    const imgFile = new File([imgBlob], imgName, { type: 'image/png' });
+
+    const result = { pdfBlob, pdfFile, pdfName, imgBlob, imgFile, imgName };
+    setPreparedFiles(result);
+    return result;
+  }, [sale, docPrefix]);
+
+  // Pre-generar el PDF y la Foto apenas se abre la factura para poder enviarlos al instante
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      buildInvoiceFiles().catch(() => {});
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [buildInvoiceFiles, customerPhone]);
+
+  if (!sale) return null;
+
+  const handlePrint = () => {
+    window.print();
   };
 
-  // Generar archivo Foto PNG tal cual como sale en sistema
-  const generateImageFile = async () => {
-    const canvas = await captureReceiptCanvas();
-    const imgBlob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 1.0));
-    const fileName = `${docPrefix}_${sale.orderNumber}.png`;
-    const imgFile = new File([imgBlob], fileName, { type: 'image/png' });
-
-    return { imgBlob, imgFile, fileName };
+  // Mensaje corto de acompañamiento para cuando se adjunta el PDF o la Foto en WhatsApp
+  const buildShortCaption = () => {
+    const cur = settings.currencySymbol || '$';
+    return (
+      `📄 *${settings.storeName}* — Adjunto su *${typeLabel} N° ${sale.orderNumber}* ` +
+      `a nombre de *${sale.customer.name}*.\n` +
+      `• Base Imponible: ${cur}${taxableBase.toFixed(2)}\n` +
+      `• + IVA (${taxRate}%): +${cur}${taxAmount.toFixed(2)}\n` +
+      `• *TOTAL A PAGAR: ${cur}${finalTotal.toFixed(2)}*`
+    );
   };
 
   // Descargar un Blob en el dispositivo
@@ -155,42 +152,112 @@ export default function ReceiptModal({ sale, settings, onClose }) {
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   };
 
-  // Descarga directa de PDF o Foto
-  const handleDirectDownload = async (format = 'pdf') => {
+  // Copiar la foto de la factura al portapapeles para pegarla con Ctrl + V directo en WhatsApp
+  const handleCopyInvoiceImage = async () => {
     try {
       setIsGenerating(true);
-      setStatusNotice(null);
-      if (format === 'pdf') {
-        const { pdfBlob, fileName } = await generatePdfFile();
-        triggerDownload(pdfBlob, fileName);
+      const files = preparedFiles.imgBlob ? preparedFiles : await buildInvoiceFiles();
+      if (files?.imgBlob && navigator.clipboard && window.ClipboardItem) {
+        await navigator.clipboard.write([
+          new window.ClipboardItem({ 'image/png': files.imgBlob })
+        ]);
+        setCopiedImage(true);
+        setTimeout(() => setCopiedImage(false), 4000);
         setStatusNotice({
           type: 'success',
-          text: `📄 Documento PDF (${fileName}) descargado tal cual como sale en sistema.`
+          text: '✅ ¡Foto de la factura copiada! Ve al chat de WhatsApp y presiona Ctrl + V (Pegar) para enviar la imagen tal cual.'
         });
       } else {
-        const { imgBlob, fileName } = await generateImageFile();
-        triggerDownload(imgBlob, fileName);
         setStatusNotice({
-          type: 'success',
-          text: `🖼️ Foto de la factura (${fileName}) descargada en alta resolución.`
+          type: 'warning',
+          text: 'Tu navegador no permite copiar imágenes automáticamente. Usa el botón Descargar Foto.'
         });
       }
     } catch (err) {
-      console.error('Error al generar documento:', err);
+      console.error('Error al copiar imagen:', err);
       setStatusNotice({
         type: 'warning',
-        text: 'No se pudo generar el archivo automáticamente. Intenta nuevamente.'
+        text: 'No se pudo copiar al portapapeles. Se descargará el archivo para que lo adjuntes.'
       });
     } finally {
       setIsGenerating(false);
     }
   };
 
-  // Enviar por WhatsApp en PDF (preferido) o en Foto tal cual como sale en sistema + desglose con IVA
+  // Descarga directa de PDF o Foto
+  const handleDirectDownload = async (format = 'pdf') => {
+    try {
+      setIsGenerating(true);
+      setStatusNotice(null);
+      const files = (format === 'pdf' ? preparedFiles.pdfBlob : preparedFiles.imgBlob)
+        ? preparedFiles
+        : await buildInvoiceFiles();
+
+      if (!files) return;
+
+      if (format === 'pdf') {
+        triggerDownload(files.pdfBlob, files.pdfName);
+        setStatusNotice({
+          type: 'success',
+          text: `📄 Documento PDF (${files.pdfName}) descargado tal cual como sale en sistema.`
+        });
+      } else {
+        triggerDownload(files.imgBlob, files.imgName);
+        setStatusNotice({
+          type: 'success',
+          text: `🖼️ Foto de la factura (${files.imgName}) descargada tal cual como sale en sistema.`
+        });
+      }
+    } catch (err) {
+      console.error('Error al descargar:', err);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Compartir el archivo PDF o Foto directamente con el menú nativo del sistema / móvil hacia la App de WhatsApp
+  const handleNativeFileShare = async () => {
+    try {
+      setIsGenerating(true);
+      const files = preparedFiles.pdfFile ? preparedFiles : await buildInvoiceFiles();
+      if (!files) return;
+
+      const fileToShare = shareFormat === 'pdf' ? files.pdfFile : files.imgFile;
+
+      if (navigator.canShare && navigator.canShare({ files: [fileToShare] })) {
+        await navigator.share({
+          files: [fileToShare],
+          title: `${typeLabel} ${sale.orderNumber}`,
+          text: buildShortCaption()
+        });
+        setStatusNotice({
+          type: 'success',
+          text: `✅ Archivo ${fileToShare.name} enviado directamente al selector de aplicaciones.`
+        });
+      } else {
+        triggerDownload(
+          shareFormat === 'pdf' ? files.pdfBlob : files.imgBlob,
+          shareFormat === 'pdf' ? files.pdfName : files.imgName
+        );
+        setStatusNotice({
+          type: 'warning',
+          text: 'Tu navegador no soporta envío directo de archivos sin descarga. Se descargó el archivo para adjuntarlo en WhatsApp.'
+        });
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.error('Error al compartir archivo:', err);
+      }
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Botón principal: Enviar PDF o Foto a WhatsApp tal cual como se descarga
   const handleWhatsAppShare = async () => {
     const cleanPhone = customerPhone ? customerPhone.replace(/[^0-9]/g, '') : '';
-    const msg = buildWhatsAppMessage();
-    const encoded = encodeURIComponent(msg);
+    const caption = buildShortCaption();
+    const encoded = encodeURIComponent(caption);
     const waUrl = cleanPhone 
       ? `https://wa.me/${cleanPhone}?text=${encoded}` 
       : `https://wa.me/?text=${encoded}`;
@@ -199,87 +266,72 @@ export default function ReceiptModal({ sale, settings, onClose }) {
       setIsGenerating(true);
       setStatusNotice(null);
 
-      if (shareFormat === 'pdf') {
-        const { pdfBlob, pdfFile, fileName } = await generatePdfFile();
+      // Obtener archivos ya pre-generados (sin demora) o generarlos si aún no están listos
+      const files = (preparedFiles.pdfFile && preparedFiles.imgFile)
+        ? preparedFiles
+        : await buildInvoiceFiles();
 
-        // En dispositivos móviles que permiten adjuntar el PDF directo a WhatsApp vía Web Share API
-        const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        if (isMobileDevice && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-          try {
-            await navigator.share({
-              files: [pdfFile],
-              title: `${typeLabel} ${sale.orderNumber}`,
-              text: msg
-            });
-            setStatusNotice({
-              type: 'success',
-              text: `✅ PDF (${fileName}) compartido directamente a WhatsApp con el desglose de IVA.`
-            });
-            setIsGenerating(false);
-            return;
-          } catch (shareErr) {
-            if (shareErr.name === 'AbortError') {
-              setIsGenerating(false);
-              return;
-            }
-          }
-        }
-
-        // Descargar el PDF oficial automáticamente y abrir el chat de WhatsApp con el desglose
-        triggerDownload(pdfBlob, fileName);
+      if (!files) {
         window.open(waUrl, '_blank');
+        return;
+      }
 
+      const targetFile = shareFormat === 'pdf' ? files.pdfFile : files.imgFile;
+      const targetBlob = shareFormat === 'pdf' ? files.pdfBlob : files.imgBlob;
+      const targetName = shareFormat === 'pdf' ? files.pdfName : files.imgName;
+
+      // 1. Si no se especificó teléfono o si estamos en móvil/tablet con soporte de envío directo de archivo a WhatsApp:
+      const isMobileOrTablet = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isMobileOrTablet && navigator.canShare && navigator.canShare({ files: [targetFile] })) {
+        try {
+          await navigator.share({
+            files: [targetFile],
+            title: `${typeLabel} ${sale.orderNumber}`,
+            text: caption
+          });
+          setStatusNotice({
+            type: 'success',
+            text: `✅ Factura (${targetName}) adjuntada directamente en WhatsApp.`
+          });
+          return;
+        } catch (shareErr) {
+          if (shareErr.name === 'AbortError') return;
+        }
+      }
+
+      // 2. En PC / WhatsApp Web:
+      // Copiamos SIEMPRE la imagen exacta de la factura al portapapeles (para que con solo presionar Ctrl+V en WhatsApp se pegue la factura visual)
+      let copiedOk = false;
+      if (navigator.clipboard && window.ClipboardItem && files.imgBlob) {
+        try {
+          await navigator.clipboard.write([
+            new window.ClipboardItem({ 'image/png': files.imgBlob })
+          ]);
+          copiedOk = true;
+          setCopiedImage(true);
+          setTimeout(() => setCopiedImage(false), 5000);
+        } catch {
+          copiedOk = false;
+        }
+      }
+
+      // Descargamos el archivo exacto elegido (PDF o Foto PNG)
+      triggerDownload(targetBlob, targetName);
+
+      // Abrimos el chat de WhatsApp del cliente
+      window.open(waUrl, '_blank');
+
+      if (shareFormat === 'pdf') {
         setStatusNotice({
           type: 'success',
-          text: `✅ Factura PDF (${fileName}) generada y descargada tal cual como sale en sistema. Se abrió WhatsApp con el desglose de IVA: solo adjunta o arrastra el PDF descargado al chat.`
+          text: `✅ ¡Listo! Se descargó tu PDF "${targetName}" y se abrió WhatsApp. Para enviarlo en el chat: arrastra el archivo "${targetName}" desde tus Descargas al chat de WhatsApp (o presiona Ctrl + V en el chat para pegarla al instante como Foto).`
         });
       } else {
-        // Formato Foto (PNG)
-        const { imgBlob, imgFile, fileName } = await generateImageFile();
-
-        // Intentar copiar la imagen al portapapeles para pegar con Ctrl+V directo en WhatsApp
-        let copiedToClipboard = false;
-        if (navigator.clipboard && window.ClipboardItem) {
-          try {
-            await navigator.clipboard.write([
-              new window.ClipboardItem({ 'image/png': imgBlob })
-            ]);
-            copiedToClipboard = true;
-          } catch {
-            copiedToClipboard = false;
-          }
-        }
-
-        const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        if (isMobileDevice && navigator.canShare && navigator.canShare({ files: [imgFile] })) {
-          try {
-            await navigator.share({
-              files: [imgFile],
-              title: `${typeLabel} ${sale.orderNumber}`,
-              text: msg
-            });
-            setStatusNotice({
-              type: 'success',
-              text: `✅ Foto de la factura (${fileName}) enviada a WhatsApp con el desglose de IVA.`
-            });
-            setIsGenerating(false);
-            return;
-          } catch (shareErr) {
-            if (shareErr.name === 'AbortError') {
-              setIsGenerating(false);
-              return;
-            }
-          }
-        }
-
-        triggerDownload(imgBlob, fileName);
-        window.open(waUrl, '_blank');
-
         setStatusNotice({
           type: 'success',
-          text: copiedToClipboard
-            ? `✅ Foto de la factura copiada al portapapeles y descargada (${fileName}). En el chat de WhatsApp solo presiona Ctrl + V (Pegar) para enviar la imagen.`
-            : `✅ Foto de la factura (${fileName}) descargada. Adjúntala en la ventana de WhatsApp que se abrió.`
+          text: copiedOk
+            ? `✅ ¡Foto de la factura copiada al portapapeles y descargada (${targetName})! En el chat de WhatsApp que se abrió solo presiona Ctrl + V (Pegar) y envíala.`
+            : `✅ Foto "${targetName}" descargada. Arrástrala o adjúntala al chat de WhatsApp que se abrió.`
         });
       }
     } catch (err) {
@@ -295,7 +347,7 @@ export default function ReceiptModal({ sale, settings, onClose }) {
       <div 
         className="modal-content" 
         onClick={(e) => e.stopPropagation()} 
-        style={{ maxWidth: '520px' }}
+        style={{ maxWidth: '530px' }}
       >
         <div className="modal-header no-print">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -309,7 +361,7 @@ export default function ReceiptModal({ sale, settings, onClose }) {
           </button>
         </div>
 
-        {/* Printable Ticket / Invoice Area (Capturado exactamente para PDF y Foto) */}
+        {/* Printable Ticket / Invoice Area (Este bloque exacto se convierte en el PDF y la Foto) */}
         <div 
           ref={receiptRef}
           className="printable-area" 
@@ -523,8 +575,8 @@ export default function ReceiptModal({ sale, settings, onClose }) {
           gap: '10px'
         }}>
           <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' }}>
-            <span>ENVIAR FACTURA TAL CUAL SALE EN SISTEMA POR WHATSAPP:</span>
-            <span className="badge badge-success" style={{ fontSize: '0.68rem' }}>IVA ({taxRate}%) Desglosado</span>
+            <span>FORMATO DE FACTURA PARA WHATSAPP:</span>
+            <span className="badge badge-success" style={{ fontSize: '0.68rem' }}>IVA ({taxRate}%) Incluido</span>
           </div>
 
           {/* Selector de Formato (PDF preferido vs Foto) + Teléfono del cliente */}
@@ -537,7 +589,7 @@ export default function ReceiptModal({ sale, settings, onClose }) {
                 style={{ flex: 1, gap: '6px', fontWeight: 700 }}
               >
                 <FileText size={14} />
-                <span>Documento PDF (Recomendado)</span>
+                <span>Documento PDF</span>
               </button>
               <button
                 type="button"
@@ -563,39 +615,53 @@ export default function ReceiptModal({ sale, settings, onClose }) {
             </div>
           </div>
 
-          {/* Botones de descarga directa rápida */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {/* Acciones rápidas para enviar/pegar/descargar el archivo exacto */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
             <button
               type="button"
               className="btn btn-secondary btn-sm"
-              onClick={() => handleDirectDownload('pdf')}
+              onClick={handleCopyInvoiceImage}
               disabled={isGenerating}
-              style={{ flex: 1, fontSize: '0.76rem' }}
+              style={{ fontSize: '0.75rem', borderColor: copiedImage ? 'var(--success)' : undefined, color: copiedImage ? 'var(--success)' : undefined }}
+              title="Copia la foto exacta de la factura para pegarla con Ctrl + V en WhatsApp"
+            >
+              {copiedImage ? <Check size={14} /> : <Copy size={14} />}
+              <span>{copiedImage ? '¡Foto Copiada! (Ctrl+V)' : 'Copiar Foto (Pegar en WA)'}</span>
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={handleNativeFileShare}
+              disabled={isGenerating}
+              style={{ fontSize: '0.75rem' }}
+              title="Abre el menú de compartir del sistema con el archivo PDF o Foto adjunto"
+            >
+              <Share2 size={14} />
+              <span>Compartir Archivo {shareFormat === 'pdf' ? 'PDF' : 'Foto'}</span>
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => handleDirectDownload(shareFormat)}
+              disabled={isGenerating}
+              style={{ fontSize: '0.75rem' }}
             >
               <Download size={14} />
-              <span>Descargar PDF</span>
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              onClick={() => handleDirectDownload('image')}
-              disabled={isGenerating}
-              style={{ flex: 1, fontSize: '0.76rem' }}
-            >
-              <ImageIcon size={14} />
-              <span>Descargar Foto</span>
+              <span>Descargar {shareFormat === 'pdf' ? 'PDF' : 'Foto'}</span>
             </button>
           </div>
 
           {statusNotice && (
             <div style={{
-              padding: '8px 12px',
+              padding: '10px 12px',
               borderRadius: 'var(--radius-sm)',
               backgroundColor: statusNotice.type === 'success' ? 'var(--success-light)' : 'var(--warning-light)',
               border: `1px solid ${statusNotice.type === 'success' ? 'var(--success)' : 'var(--warning)'}`,
               color: statusNotice.type === 'success' ? 'var(--success)' : 'var(--warning)',
               fontSize: '0.76rem',
-              lineHeight: 1.35,
+              lineHeight: 1.4,
               fontWeight: 600
             }}>
               {statusNotice.text}
@@ -617,8 +683,8 @@ export default function ReceiptModal({ sale, settings, onClose }) {
             <MessageCircle size={17} />
             <span>
               {isGenerating 
-                ? 'Generando Factura...' 
-                : `Enviar ${shareFormat === 'pdf' ? 'PDF' : 'Foto'} por WhatsApp`}
+                ? 'Preparando Factura...' 
+                : `Enviar ${shareFormat === 'pdf' ? 'PDF' : 'Foto'} a WhatsApp`}
             </span>
           </button>
           <button className="btn btn-primary" onClick={handlePrint}>
