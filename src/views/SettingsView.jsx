@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
 import { 
-  Settings, 
-  Store, 
   Save, 
   Download, 
   Upload, 
   RotateCcw, 
   CheckCircle2, 
-  ShieldAlert, 
   Server, 
   Database,
-  ExternalLink,
   Sparkles
 } from 'lucide-react';
 import { storage } from '../services/storage';
@@ -19,7 +15,6 @@ export default function SettingsView({
   settings, 
   onUpdateSettings, 
   onReloadAll, 
-  onClearSales,
   onClearAllData,
   onLoadDemoParts
 }) {
@@ -62,26 +57,6 @@ export default function SettingsView({
     reader.readAsText(file);
   };
 
-  const handleResetDemo = () => {
-    if (window.confirm("¿Seguro que deseas restablecer todos los datos a la demostración inicial? Se borrarán las ventas nuevas.")) {
-      storage.resetToDemo();
-      onReloadAll();
-      alert("Datos restablecidos a la demostración inicial.");
-    }
-  };
-
-  const handleClearSales = () => {
-    if (window.confirm("¿Deseas poner las estadísticas y ventas en CERO ($0.00) para presentar al cliente? El catálogo de repuestos se mantendrá.")) {
-      if (onClearSales) {
-        onClearSales();
-      } else {
-        storage.clearSales();
-        onReloadAll();
-      }
-      alert("¡Estadísticas y ventas puestas en cero exitosamente!");
-    }
-  };
-
   const handleClearAllData = () => {
     if (window.confirm("¿Deseas poner TODAS las estadísticas en cero (Alertas de stock = 0, Valor de inventario = $0.00, Catálogo = 0 SKUs, Ventas = $0.00)? El sistema quedará 100% limpio para tu cliente.")) {
       if (onClearAllData) {
@@ -107,275 +82,293 @@ export default function SettingsView({
   };
 
   return (
-    <div style={{ padding: 'clamp(12px, 2.5vw, 24px)', maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }} className="animate-fade-in">
-      <div>
-        <h2 style={{ fontSize: 'clamp(1.15rem, 3.5vw, 1.4rem)', fontWeight: 800 }}>Configuración de la Tienda (Marca Blanca)</h2>
-        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-          Personaliza los datos de tu cliente para comprobantes, moneda local, teléfono de WhatsApp y respaldos de base de datos.
-        </p>
-      </div>
-
-      {saveSuccess && (
-        <div style={{
-          backgroundColor: 'var(--success-light)',
-          border: '1px solid var(--success)',
-          color: 'var(--success)',
-          padding: '12px 16px',
-          borderRadius: 'var(--radius-md)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          fontSize: '0.88rem',
-          fontWeight: 600
-        }}>
-          <CheckCircle2 size={18} />
-          <span>¡Configuración guardada exitosamente! Los cambios se aplican de inmediato en tickets y pantallas.</span>
-        </div>
-      )}
-
-      {/* Main Settings Form */}
-      <form onSubmit={handleSubmit} style={{
-        backgroundColor: 'var(--bg-secondary)',
-        padding: 'clamp(14px, 2.5vw, 24px)',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--border-color)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px'
-      }}>
-        <h3 style={{ fontSize: '1.05rem', fontWeight: 700, borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
-          Datos Comerciales de la Empresa
-        </h3>
-
-        <div className="responsive-form-grid-2">
-          <div className="input-group">
-            <label className="input-label">Nombre Comercial de la Tienda *</label>
-            <input
-              type="text"
-              className="input"
-              value={formData.storeName}
-              onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
-              required
-            />
-          </div>
-
-          <div className="input-group">
-            <label className="input-label">Razón Social Legal *</label>
-            <input
-              type="text"
-              className="input"
-              value={formData.legalName}
-              onChange={(e) => setFormData({ ...formData, legalName: e.target.value })}
-              required
-            />
-          </div>
-        </div>
-
-        <div className="responsive-form-grid-3">
-          <div className="input-group">
-            <label className="input-label">Identificación Fiscal (RIF / NIT / RUT / RFC) *</label>
-            <input
-              type="text"
-              className="input mono"
-              value={formData.taxId}
-              onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
-              required
-            />
-          </div>
-
-          <div className="input-group">
-            <label className="input-label">Teléfono de la Tienda</label>
-            <input
-              type="text"
-              className="input"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-            />
-          </div>
-
-          <div className="input-group">
-            <label className="input-label">WhatsApp para Pedidos y Cotizaciones *</label>
-            <input
-              type="text"
-              className="input"
-              placeholder="+58 414 1234567"
-              value={formData.whatsapp}
-              onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
-              required
-            />
-          </div>
-        </div>
-
-        <div className="input-group">
-          <label className="input-label">Dirección Física del Local</label>
-          <input
-            type="text"
-            className="input"
-            value={formData.address}
-            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-          />
-        </div>
-
-        <h3 style={{ fontSize: '1.1rem', fontWeight: 700, borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', marginTop: '10px' }}>
-          Identidad Visual y Logotipo
-        </h3>
-
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <div style={{
-            width: '84px',
-            height: '84px',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            border: '2px solid rgba(0, 229, 255, 0.5)',
-            boxShadow: '0 0 16px rgba(0, 229, 255, 0.35)',
-            backgroundColor: '#050811',
-            flexShrink: 0
-          }}>
-            <img src={formData.logoUrl || '/logo.jpg'} alt="Logo de la tienda" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          </div>
-          <div style={{ flex: 1 }}>
-            <label className="input-label">Ruta o URL del Logotipo Oficial</label>
-            <input
-              type="text"
-              className="input"
-              value={formData.logoUrl || '/logo.jpg'}
-              onChange={(e) => setFormData({ ...formData, logoUrl: e.target.value })}
-            />
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-              Este logotipo se muestra en la barra lateral, cabecera principal y comprobantes impresos.
-            </p>
-          </div>
-        </div>
-
-        <h3 style={{ fontSize: '1.05rem', fontWeight: 700, borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', marginTop: '10px' }}>
-          Moneda e Impuestos
-        </h3>
-
-        <div className="responsive-form-grid-2">
-          <div className="input-group">
-            <label className="input-label">Símbolo de Moneda ($, S/., COP, MXN, €)</label>
-            <input
-              type="text"
-              className="input mono"
-              value={formData.currencySymbol}
-              onChange={(e) => setFormData({ ...formData, currencySymbol: e.target.value })}
-              style={{ fontWeight: 800, fontSize: '1.1rem' }}
-            />
-          </div>
-
-          <div className="input-group">
-            <label className="input-label">Porcentaje de Impuesto / IVA (%)</label>
-            <input
-              type="number"
-              step="any"
-              className="input"
-              value={formData.taxRate}
-              onChange={(e) => setFormData({ ...formData, taxRate: parseFloat(e.target.value) || 0 })}
-            />
-          </div>
-        </div>
-
-        <div className="input-group">
-          <label className="input-label">Términos de Garantía y Pie de Página en Tickets</label>
-          <textarea
-            className="textarea"
-            rows={2}
-            value={formData.ticketFooter}
-            onChange={(e) => setFormData({ ...formData, ticketFooter: e.target.value })}
-          />
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '10px' }}>
-          <button type="submit" className="btn btn-primary btn-lg" style={{ fontWeight: 800, width: '100%', maxWidth: '380px', justifyContent: 'center' }}>
-            <Save size={18} />
-            <span>Guardar Configuración de la Tienda</span>
-          </button>
-        </div>
-      </form>
-
-      {/* Backup & Data Administration */}
-      <div style={{
-        backgroundColor: 'var(--bg-secondary)',
-        padding: 'clamp(14px, 2.5vw, 24px)',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--border-color)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Database size={22} color="var(--primary)" />
-          <div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Respaldo y Restauración de Base de Datos</h3>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-              Exporta la base completa de repuestos, precios y ventas para migración o seguridad.
-            </p>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', paddingTop: '8px' }}>
-          <button type="button" className="btn btn-secondary" onClick={handleExportBackup}>
-            <Download size={16} />
-            <span>Descargar Backup Completo (JSON)</span>
-          </button>
-
-          <label className="btn btn-secondary" style={{ cursor: 'pointer' }}>
-            <Upload size={16} />
-            <span>Restaurar desde Archivo Backup</span>
-            <input
-              type="file"
-              accept=".json"
-              style={{ display: 'none' }}
-              onChange={handleImportBackup}
-            />
-          </label>
-
-          <button 
-            type="button" 
-            className="btn btn-secondary" 
-            onClick={handleClearAllData}
-            style={{ 
-              borderColor: 'rgba(0, 229, 255, 0.45)', 
-              color: 'var(--accent-cyan)',
-              backgroundColor: 'rgba(0, 229, 255, 0.08)',
-              fontWeight: 700
-            }}
-          >
-            <Sparkles size={16} />
-            <span>Poner TODAS las Estadísticas en Cero (Para Clientes)</span>
-          </button>
-
-          <button 
-            type="button" 
-            className="btn btn-secondary" 
-            onClick={handleLoadDemo}
-            style={{ color: 'var(--text-primary)' }}
-          >
-            <RotateCcw size={16} />
-            <span>Cargar Catálogo Demo (17 Repuestos)</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Info Card: Laragon / Laravel API Architecture */}
-      <div style={{
-        backgroundColor: 'var(--bg-tertiary)',
-        padding: '20px 24px',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--border-accent)',
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: '16px'
-      }}>
-        <Server size={26} color="var(--accent-cyan)" style={{ flexShrink: 0, marginTop: '2px' }} />
+    <div className="view-full-screen animate-fade-in">
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', flexShrink: 0 }}>
         <div>
-          <h4 style={{ fontSize: '0.98rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-            Arquitectura Desacoplada: Listo para Conectar con Laravel y Laragon
-          </h4>
-          <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginTop: '4px', lineHeight: 1.45 }}>
-            Este software cuenta con una capa de servicios aislada en <code className="mono">src/services/api.js</code>. 
-            Actualmente guarda todo localmente a máxima velocidad. Si deseas conectar un backend Laravel en Laragon (MySQL / SQLite), solo debes cambiar la constante <code className="mono">USE_LARAVEL_API = true</code> y la aplicación consumirá los endpoints REST sin tener que modificar una sola línea de la interfaz.
+          <h2 style={{ fontSize: 'clamp(1.05rem, 2.5vw, 1.25rem)', fontWeight: 800, lineHeight: 1.2 }}>
+            Configuración de la Tienda (Marca Blanca)
+          </h2>
+          <p style={{ fontSize: '0.76rem', color: 'var(--text-secondary)' }}>
+            Personaliza los datos para comprobantes, moneda, IVA, WhatsApp y respaldos de base de datos.
           </p>
+        </div>
+
+        {saveSuccess && (
+          <div style={{
+            backgroundColor: 'var(--success-light)',
+            border: '1px solid var(--success)',
+            color: 'var(--success)',
+            padding: '6px 12px',
+            borderRadius: 'var(--radius-md)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '0.78rem',
+            fontWeight: 600
+          }}>
+            <CheckCircle2 size={15} />
+            <span>¡Configuración guardada exitosamente!</span>
+          </div>
+        )}
+      </div>
+
+      {/* Two-Column Desktop Layout (Fits 100% inside computer screen) */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 420px), 1fr))',
+        gap: '12px',
+        flex: 1,
+        minHeight: 0,
+        overflowY: 'auto'
+      }}>
+        {/* LEFT COLUMN: Datos Comerciales, Logo, Moneda e Impuestos */}
+        <form onSubmit={handleSubmit} style={{
+          backgroundColor: 'var(--bg-secondary)',
+          padding: '14px 18px',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--border-color)',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          gap: '10px'
+        }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <h3 style={{ fontSize: '0.92rem', fontWeight: 700, borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', color: 'var(--accent-cyan)' }}>
+              1. Datos Comerciales y Fiscales
+            </h3>
+
+            <div className="responsive-form-grid-2">
+              <div className="input-group" style={{ marginBottom: 0 }}>
+                <label className="input-label">Nombre Comercial de la Tienda *</label>
+                <input
+                  type="text"
+                  className="input"
+                  value={formData.storeName}
+                  onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="input-group" style={{ marginBottom: 0 }}>
+                <label className="input-label">Razón Social Legal *</label>
+                <input
+                  type="text"
+                  className="input"
+                  value={formData.legalName}
+                  onChange={(e) => setFormData({ ...formData, legalName: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="responsive-form-grid-3">
+              <div className="input-group" style={{ marginBottom: 0 }}>
+                <label className="input-label">RIF / NIT / RUT *</label>
+                <input
+                  type="text"
+                  className="input mono"
+                  value={formData.taxId}
+                  onChange={(e) => setFormData({ ...formData, taxId: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="input-group" style={{ marginBottom: 0 }}>
+                <label className="input-label">Teléfono Tienda</label>
+                <input
+                  type="text"
+                  className="input"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                />
+              </div>
+
+              <div className="input-group" style={{ marginBottom: 0 }}>
+                <label className="input-label">WhatsApp Pedidos *</label>
+                <input
+                  type="text"
+                  className="input"
+                  placeholder="+58 414 1234567"
+                  value={formData.whatsapp}
+                  onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="input-group" style={{ marginBottom: 0 }}>
+              <label className="input-label">Dirección Física del Local</label>
+              <input
+                type="text"
+                className="input"
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              />
+            </div>
+
+            <h3 style={{ fontSize: '0.92rem', fontWeight: 700, borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginTop: '4px', color: 'var(--accent-cyan)' }}>
+              2. Logotipo, Moneda, IVA y Garantía
+            </h3>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 90px 100px', gap: '10px', alignItems: 'center' }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '10px',
+                overflow: 'hidden',
+                border: '1.5px solid rgba(0, 229, 255, 0.5)',
+                backgroundColor: '#050811',
+                flexShrink: 0
+              }}>
+                <img src={formData.logoUrl || '/logo.jpg'} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+
+              <div className="input-group" style={{ marginBottom: 0 }}>
+                <label className="input-label">Ruta / URL del Logotipo</label>
+                <input
+                  type="text"
+                  className="input"
+                  value={formData.logoUrl || '/logo.jpg'}
+                  onChange={(e) => setFormData({ ...formData, logoUrl: e.target.value })}
+                />
+              </div>
+
+              <div className="input-group" style={{ marginBottom: 0 }}>
+                <label className="input-label">Moneda</label>
+                <input
+                  type="text"
+                  className="input mono"
+                  value={formData.currencySymbol}
+                  onChange={(e) => setFormData({ ...formData, currencySymbol: e.target.value })}
+                  style={{ fontWeight: 800, textAlign: 'center' }}
+                />
+              </div>
+
+              <div className="input-group" style={{ marginBottom: 0 }}>
+                <label className="input-label">IVA (%)</label>
+                <input
+                  type="number"
+                  step="any"
+                  className="input"
+                  value={formData.taxRate}
+                  onChange={(e) => setFormData({ ...formData, taxRate: parseFloat(e.target.value) || 0 })}
+                  style={{ fontWeight: 700 }}
+                />
+              </div>
+            </div>
+
+            <div className="input-group" style={{ marginBottom: 0 }}>
+              <label className="input-label">Términos de Garantía y Pie de Página en Facturas / Tickets</label>
+              <textarea
+                className="textarea"
+                rows={2}
+                value={formData.ticketFooter}
+                onChange={(e) => setFormData({ ...formData, ticketFooter: e.target.value })}
+                style={{ padding: '6px 10px', fontSize: '0.8rem' }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '6px', borderTop: '1px solid var(--border-color)' }}>
+            <button type="submit" className="btn btn-primary" style={{ fontWeight: 800, width: '100%', justifyContent: 'center', padding: '9px 18px' }}>
+              <Save size={16} />
+              <span>Guardar Configuración de la Tienda</span>
+            </button>
+          </div>
+        </form>
+
+        {/* RIGHT COLUMN: Respaldo de Base de Datos & Arquitectura */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {/* Backup & Data Administration */}
+          <div style={{
+            backgroundColor: 'var(--bg-secondary)',
+            padding: '14px 18px',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--border-color)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            flex: 1
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
+              <Database size={20} color="var(--primary)" />
+              <div>
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 700 }}>Respaldo y Administración de Base de Datos</h3>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                  Exporta o restaura la base completa de repuestos, precios y ventas.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={handleExportBackup} style={{ padding: '10px 12px', justifyContent: 'center' }}>
+                <Download size={15} />
+                <span>Descargar Backup (JSON)</span>
+              </button>
+
+              <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer', padding: '10px 12px', justifyContent: 'center' }}>
+                <Upload size={15} />
+                <span>Restaurar desde Backup</span>
+                <input
+                  type="file"
+                  accept=".json"
+                  style={{ display: 'none' }}
+                  onChange={handleImportBackup}
+                />
+              </label>
+
+              <button 
+                type="button" 
+                className="btn btn-secondary btn-sm" 
+                onClick={handleClearAllData}
+                style={{ 
+                  borderColor: 'rgba(0, 229, 255, 0.45)', 
+                  color: 'var(--accent-cyan)',
+                  backgroundColor: 'rgba(0, 229, 255, 0.08)',
+                  fontWeight: 700,
+                  padding: '10px 12px',
+                  gridColumn: '1 / -1',
+                  justifyContent: 'center'
+                }}
+              >
+                <Sparkles size={15} />
+                <span>Poner TODAS las Estadísticas en Cero (Para Clientes)</span>
+              </button>
+
+              <button 
+                type="button" 
+                className="btn btn-secondary btn-sm" 
+                onClick={handleLoadDemo}
+                style={{ color: 'var(--text-primary)', padding: '10px 12px', gridColumn: '1 / -1', justifyContent: 'center' }}
+              >
+                <RotateCcw size={15} />
+                <span>Cargar Catálogo Demo (17 Repuestos)</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Info Card: Laragon / Laravel API Architecture */}
+          <div style={{
+            backgroundColor: 'var(--bg-tertiary)',
+            padding: '14px 18px',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--border-accent)',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '12px'
+          }}>
+            <Server size={22} color="var(--accent-cyan)" style={{ flexShrink: 0, marginTop: '2px' }} />
+            <div>
+              <h4 style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                Arquitectura Desacoplada: Listo para Laravel y Laragon
+              </h4>
+              <p style={{ fontSize: '0.76rem', color: 'var(--text-secondary)', marginTop: '3px', lineHeight: 1.4 }}>
+                Capa de servicios aislada en <code className="mono">src/services/api.js</code>. 
+                Para conectar con un backend Laravel en Laragon (MySQL / SQLite), cambia <code className="mono">USE_LARAVEL_API = true</code> y consumirá los endpoints REST automáticamente.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

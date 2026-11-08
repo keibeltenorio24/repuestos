@@ -71,22 +71,22 @@ export default function Sidebar({
     >
       {/* Brand Header with Neon Logo */}
       <div style={{
-        padding: (!isMobileMode && collapsed) ? '14px 12px' : '16px 16px',
+        padding: (!isMobileMode && collapsed) ? '10px 10px' : '12px 14px',
         borderBottom: '1px solid var(--border-color)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        gap: '12px',
+        gap: '10px',
         background: 'linear-gradient(180deg, rgba(0, 229, 255, 0.06) 0%, transparent 100%)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
           <div style={{
-            width: '44px',
-            height: '44px',
-            borderRadius: '10px',
+            width: '38px',
+            height: '38px',
+            borderRadius: '9px',
             overflow: 'hidden',
             border: '1.5px solid rgba(0, 229, 255, 0.55)',
-            boxShadow: '0 0 14px rgba(0, 229, 255, 0.35)',
+            boxShadow: '0 0 12px rgba(0, 229, 255, 0.35)',
             flexShrink: 0,
             backgroundColor: '#040711',
             display: 'flex',
@@ -102,7 +102,7 @@ export default function Sidebar({
           {(isMobileMode || !collapsed) && (
             <div style={{ overflow: 'hidden' }}>
               <h1 className="brand-title" style={{
-                fontSize: '1rem',
+                fontSize: '0.94rem',
                 fontWeight: 900,
                 color: 'var(--text-primary)',
                 lineHeight: 1.15,
@@ -112,9 +112,9 @@ export default function Sidebar({
               }}>
                 {settings.storeName || 'B&G Multiservicios'}
               </h1>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
                 <span style={{
-                  fontSize: '0.66rem',
+                  fontSize: '0.62rem',
                   fontWeight: 800,
                   color: 'var(--primary)',
                   letterSpacing: '0.06em',

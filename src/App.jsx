@@ -118,7 +118,7 @@ export default function App() {
   const lowStockCount = parts.filter(p => p.stock <= p.minStock).length;
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-primary)' }}>
+    <div className="app-shell">
       {/* Sidebar de navegación (Desktop + Mobile Drawer) */}
       <Sidebar
         currentView={currentView}
@@ -132,7 +132,7 @@ export default function App() {
       />
 
       {/* Main Container */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflowX: 'hidden' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0, overflow: 'hidden' }}>
         {/* Header superior */}
         <Header
           settings={settings}
@@ -148,11 +148,7 @@ export default function App() {
         />
 
         {/* Dynamic Views */}
-        <main style={{ 
-          flex: 1, 
-          overflowY: 'auto',
-          paddingBottom: 'calc(var(--bottom-nav-height, 62px) + env(safe-area-inset-bottom, 0px))'
-        }}>
+        <main className="app-main-content">
           {currentView === 'dashboard' && (
             <DashboardView
               parts={parts}

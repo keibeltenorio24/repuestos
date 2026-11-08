@@ -37,12 +37,12 @@ export default function SalesHistoryView({
   });
 
   return (
-    <div style={{ padding: 'clamp(12px, 2.5vw, 24px)', display: 'flex', flexDirection: 'column', gap: '16px' }} className="animate-fade-in">
+    <div className="view-full-screen animate-fade-in">
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px', flexShrink: 0 }}>
         <div>
-          <h2 style={{ fontSize: 'clamp(1.15rem, 3.5vw, 1.4rem)', fontWeight: 800 }}>Ventas y Cotizaciones</h2>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+          <h2 style={{ fontSize: 'clamp(1.05rem, 2.5vw, 1.25rem)', fontWeight: 800, lineHeight: 1.2 }}>Ventas y Cotizaciones</h2>
+          <p style={{ fontSize: '0.76rem', color: 'var(--text-secondary)' }}>
             Registro histórico de tickets emitidos, facturación y proformas pendientes
           </p>
         </div>
@@ -51,23 +51,24 @@ export default function SalesHistoryView({
       {/* Filter Bar */}
       <div style={{
         backgroundColor: 'var(--bg-secondary)',
-        padding: '12px 14px',
-        borderRadius: 'var(--radius-lg)',
+        padding: '8px 12px',
+        borderRadius: 'var(--radius-md)',
         border: '1px solid var(--border-color)',
         display: 'flex',
-        gap: '10px',
+        gap: '8px',
         flexWrap: 'wrap',
-        alignItems: 'center'
+        alignItems: 'center',
+        flexShrink: 0
       }}>
         <div style={{ position: 'relative', flex: '1 1 200px' }}>
-          <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+          <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input
             type="text"
             className="input"
             placeholder="Buscar por Comprobante, Cliente o Cédula..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ paddingLeft: '38px' }}
+            style={{ paddingLeft: '34px', paddingTop: '6px', paddingBottom: '6px', fontSize: '0.82rem' }}
           />
         </div>
 
@@ -81,7 +82,7 @@ export default function SalesHistoryView({
             <button
               key={f.id}
               className={`btn btn-sm ${typeFilter === f.id ? 'btn-primary' : 'btn-secondary'}`}
-              style={{ whiteSpace: 'nowrap', flexShrink: 0 }}
+              style={{ whiteSpace: 'nowrap', flexShrink: 0, padding: '5px 12px', fontSize: '0.76rem' }}
               onClick={() => setTypeFilter(f.id)}
             >
               {f.label}
@@ -212,19 +213,21 @@ export default function SalesHistoryView({
         borderRadius: 'var(--radius-lg)',
         border: '1px solid var(--border-color)',
         overflow: 'hidden',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        flex: 1,
+        minHeight: 0
       }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-            <thead>
+        <div style={{ overflowX: 'auto', overflowY: 'auto', flex: 1, minHeight: 0 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.82rem' }}>
+            <thead style={{ position: 'sticky', top: 0, zIndex: 5 }}>
               <tr style={{ backgroundColor: 'var(--bg-tertiary)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
-                <th style={{ padding: '12px 16px' }}>COMPROBANTE</th>
-                <th style={{ padding: '12px 16px' }}>FECHA Y HORA</th>
-                <th style={{ padding: '12px 16px' }}>CLIENTE</th>
-                <th style={{ padding: '12px 16px' }}>REPUESTOS</th>
-                <th style={{ padding: '12px 16px' }}>MÉTODO DE PAGO</th>
-                <th style={{ padding: '12px 16px', textAlign: 'right' }}>TOTAL</th>
-                <th style={{ padding: '12px 16px', textAlign: 'center' }}>ACCIONES</th>
+                <th style={{ padding: '9px 14px' }}>COMPROBANTE</th>
+                <th style={{ padding: '9px 14px' }}>FECHA Y HORA</th>
+                <th style={{ padding: '9px 14px' }}>CLIENTE</th>
+                <th style={{ padding: '9px 14px' }}>REPUESTOS</th>
+                <th style={{ padding: '9px 14px' }}>MÉTODO DE PAGO</th>
+                <th style={{ padding: '9px 14px', textAlign: 'right' }}>TOTAL</th>
+                <th style={{ padding: '9px 14px', textAlign: 'center' }}>ACCIONES</th>
               </tr>
             </thead>
             <tbody>

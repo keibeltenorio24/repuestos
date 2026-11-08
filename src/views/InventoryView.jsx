@@ -242,29 +242,30 @@ export default function InventoryView({
   };
 
   return (
-    <div style={{ padding: 'clamp(12px, 2.5vw, 24px)', display: 'flex', flexDirection: 'column', gap: '16px' }} className="animate-fade-in">
+    <div className="view-full-screen animate-fade-in">
       {/* Top Header & Actions */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '12px'
+        gap: '10px',
+        flexShrink: 0
       }}>
         <div>
-          <h2 style={{ fontSize: 'clamp(1.15rem, 3.5vw, 1.4rem)', fontWeight: 800 }}>Inventario de Repuestos</h2>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+          <h2 style={{ fontSize: 'clamp(1.05rem, 2.5vw, 1.25rem)', fontWeight: 800, lineHeight: 1.2 }}>Inventario de Repuestos</h2>
+          <p style={{ fontSize: '0.76rem', color: 'var(--text-secondary)' }}>
             Control de stock, códigos OEM, compatibilidad automotriz y valorización de almacén
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', width: '100%', maxWidth: '360px' }}>
-          <button className="btn btn-secondary" onClick={handleExportCSV} style={{ flex: '1 1 130px' }}>
-            <Download size={16} />
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <button className="btn btn-secondary btn-sm" onClick={handleExportCSV} style={{ padding: '7px 14px' }}>
+            <Download size={15} />
             <span>Exportar CSV</span>
           </button>
-          <button className="btn btn-primary" onClick={handleOpenCreate} style={{ flex: '1 1 130px' }}>
-            <Plus size={16} />
+          <button className="btn btn-primary btn-sm" onClick={handleOpenCreate} style={{ padding: '7px 14px' }}>
+            <Plus size={15} />
             <span>Nuevo Repuesto</span>
           </button>
         </div>
@@ -273,17 +274,18 @@ export default function InventoryView({
       {/* Filter Bar */}
       <div style={{
         backgroundColor: 'var(--bg-secondary)',
-        padding: '12px 14px',
-        borderRadius: 'var(--radius-lg)',
+        padding: '8px 12px',
+        borderRadius: 'var(--radius-md)',
         border: '1px solid var(--border-color)',
         display: 'flex',
-        gap: '10px',
+        gap: '8px',
         flexWrap: 'wrap',
-        alignItems: 'center'
+        alignItems: 'center',
+        flexShrink: 0
       }}>
         {/* Search */}
         <div style={{ position: 'relative', flex: '1 1 200px' }}>
-          <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+          <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input
             type="text"
             className="input"
@@ -293,14 +295,14 @@ export default function InventoryView({
               setSearchQuery(e.target.value);
               setCurrentPage(1);
             }}
-            style={{ paddingLeft: '38px' }}
+            style={{ paddingLeft: '34px', paddingTop: '6px', paddingBottom: '6px', fontSize: '0.82rem' }}
           />
         </div>
 
         {/* Category Filter */}
         <select
           className="select"
-          style={{ flex: '1 1 140px' }}
+          style={{ flex: '0 1 190px', paddingTop: '6px', paddingBottom: '6px', fontSize: '0.82rem' }}
           value={categoryFilter}
           onChange={(e) => {
             setCategoryFilter(e.target.value);
@@ -316,7 +318,7 @@ export default function InventoryView({
         {/* Stock Filter */}
         <select
           className="select"
-          style={{ flex: '1 1 130px' }}
+          style={{ flex: '0 1 170px', paddingTop: '6px', paddingBottom: '6px', fontSize: '0.82rem' }}
           value={stockFilter}
           onChange={(e) => {
             setStockFilter(e.target.value);
@@ -477,35 +479,37 @@ export default function InventoryView({
         )}
       </div>
 
-      {/* Parts Table (Desktop view / scrollable) */}
+      {/* Parts Table (Desktop view / fits viewport cleanly) */}
       <div className="desktop-only" style={{
         backgroundColor: 'var(--bg-secondary)',
         borderRadius: 'var(--radius-lg)',
         border: '1px solid var(--border-color)',
         overflow: 'hidden',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        flex: 1,
+        minHeight: 0
       }}>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-            <thead>
+        <div style={{ overflowX: 'auto', overflowY: 'auto', flex: 1, minHeight: 0 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.82rem' }}>
+            <thead style={{ position: 'sticky', top: 0, zIndex: 5 }}>
               <tr style={{ backgroundColor: 'var(--bg-tertiary)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>
-                <th style={{ padding: '12px 16px' }}>CÓDIGO OEM / SKU</th>
-                <th style={{ padding: '12px 16px' }}>DESCRIPCIÓN Y MARCA</th>
-                <th style={{ padding: '12px 16px' }}>CATEGORÍA</th>
-                <th style={{ padding: '12px 16px', textAlign: 'center' }}>STOCK</th>
-                <th style={{ padding: '12px 16px', textAlign: 'right' }}>COSTO</th>
-                <th style={{ padding: '12px 16px', textAlign: 'right' }}>PRECIO VENTA</th>
-                <th style={{ padding: '12px 16px', textAlign: 'center' }}>ACCIONES</th>
+                <th style={{ padding: '9px 14px' }}>CÓDIGO OEM / SKU</th>
+                <th style={{ padding: '9px 14px' }}>DESCRIPCIÓN Y MARCA</th>
+                <th style={{ padding: '9px 14px' }}>CATEGORÍA</th>
+                <th style={{ padding: '9px 14px', textAlign: 'center' }}>STOCK</th>
+                <th style={{ padding: '9px 14px', textAlign: 'right' }}>COSTO</th>
+                <th style={{ padding: '9px 14px', textAlign: 'right' }}>PRECIO VENTA</th>
+                <th style={{ padding: '9px 14px', textAlign: 'center' }}>ACCIONES</th>
               </tr>
             </thead>
             <tbody>
               {filteredParts.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '50px 20px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '40px 20px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                       <div style={{
-                        width: '48px',
-                        height: '48px',
+                        width: '44px',
+                        height: '44px',
                         borderRadius: '50%',
                         backgroundColor: 'rgba(0, 229, 255, 0.1)',
                         border: '1px solid rgba(0, 229, 255, 0.3)',
@@ -514,12 +518,12 @@ export default function InventoryView({
                         justifyContent: 'center',
                         color: 'var(--accent-cyan)'
                       }}>
-                        <Package size={24} />
+                        <Package size={22} />
                       </div>
-                      <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--text-primary)' }}>
+                      <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>
                         {parts.length === 0 ? 'Catálogo en Cero: 0 repuestos registrados' : 'No se encontraron repuestos con los filtros aplicados'}
                       </div>
-                      <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', maxWidth: '420px', lineHeight: 1.4 }}>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', maxWidth: '420px', lineHeight: 1.4 }}>
                         {parts.length === 0 
                           ? 'El inventario está completamente limpio. Puedes comenzar a registrar los repuestos de tu cliente o cargar la muestra de demostración.' 
                           : 'Prueba buscando con otro término, marca o código OEM.'}
@@ -547,9 +551,6 @@ export default function InventoryView({
                 paginatedParts.map(part => {
                   const isOut = part.stock === 0;
                   const isLow = part.stock <= part.minStock && !isOut;
-                  const marginPct = part.costPrice > 0
-                    ? Math.round(((part.salePrice - part.costPrice) / part.costPrice) * 100)
-                    : 0;
 
                   return (
                     <tr
@@ -562,25 +563,25 @@ export default function InventoryView({
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
                       {/* OEM & SKU */}
-                      <td style={{ padding: '12px 16px' }}>
-                        <div className="mono" style={{ fontWeight: 800, color: 'var(--accent-cyan)' }}>
+                      <td style={{ padding: '7px 14px' }}>
+                        <div className="mono" style={{ fontWeight: 800, color: 'var(--accent-cyan)', fontSize: '0.8rem' }}>
                           {part.oemNumber}
                         </div>
-                        <div className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                        <div className="mono" style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
                           SKU: {part.sku}
                         </div>
                       </td>
 
                       {/* Name & Brand with Photo Thumbnail */}
-                      <td style={{ padding: '10px 16px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <td style={{ padding: '7px 14px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           {part.image && (
                             <div
                               onClick={() => setPreviewPart(part)}
                               style={{
-                                width: '42px',
-                                height: '42px',
-                                borderRadius: '8px',
+                                width: '36px',
+                                height: '36px',
+                                borderRadius: '6px',
                                 overflow: 'hidden',
                                 flexShrink: 0,
                                 border: '1px solid var(--border-color)',
@@ -601,26 +602,26 @@ export default function InventoryView({
                                 right: '1px',
                                 backgroundColor: 'rgba(0,0,0,0.65)',
                                 borderRadius: '3px',
-                                padding: '1px 3px',
+                                padding: '1px 2px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 color: '#fff'
                               }}>
-                                <Eye size={10} />
+                                <Eye size={9} />
                               </div>
                             </div>
                           )}
                           <div>
-                            <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.90rem' }}>
+                            <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.84rem', lineHeight: 1.2 }}>
                               {part.name}
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '3px' }}>
-                              <span className="badge badge-primary mono" style={{ fontSize: '0.68rem', padding: '1px 6px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                              <span className="badge badge-primary mono" style={{ fontSize: '0.64rem', padding: '1px 5px' }}>
                                 {part.brand}
                               </span>
                               {part.compatibleVehicles && part.compatibleVehicles.length > 0 && (
-                                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
                                   Aplica: {part.compatibleVehicles[0].make} {part.compatibleVehicles[0].model}
                                   {part.compatibleVehicles.length > 1 && ` (+${part.compatibleVehicles.length - 1})`}
                                 </span>
@@ -631,34 +632,35 @@ export default function InventoryView({
                       </td>
 
                       {/* Category */}
-                      <td style={{ padding: '12px 16px', textTransform: 'capitalize' }}>
+                      <td style={{ padding: '7px 14px', textTransform: 'capitalize', fontSize: '0.8rem' }}>
                         {part.category}
                       </td>
 
                       {/* Stock badge */}
-                      <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                        <span className={`badge ${isOut ? 'badge-danger' : (isLow ? 'badge-warning' : 'badge-success')}`}>
+                      <td style={{ padding: '7px 14px', textAlign: 'center' }}>
+                        <span className={`badge ${isOut ? 'badge-danger' : (isLow ? 'badge-warning' : 'badge-success')}`} style={{ fontSize: '0.68rem', padding: '2px 8px' }}>
                           {part.stock} unid.
                         </span>
                       </td>
 
                       {/* Cost */}
-                      <td style={{ padding: '12px 16px', textAlign: 'right', color: 'var(--text-muted)' }}>
+                      <td style={{ padding: '7px 14px', textAlign: 'right', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
                         {settings.currencySymbol}{part.costPrice.toFixed(2)}
                       </td>
 
                       {/* Sale Price */}
-                      <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                        <div style={{ fontWeight: 800, color: 'var(--primary-hover)' }}>
+                      <td style={{ padding: '7px 14px', textAlign: 'right' }}>
+                        <div style={{ fontWeight: 800, color: 'var(--primary-hover)', fontSize: '0.88rem' }}>
                           {settings.currencySymbol}{part.salePrice.toFixed(2)}
                         </div>
                       </td>
 
                       {/* Actions */}
-                      <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                        <div style={{ display: 'inline-flex', gap: '6px' }}>
+                      <td style={{ padding: '7px 14px', textAlign: 'center' }}>
+                        <div style={{ display: 'inline-flex', gap: '5px' }}>
                           <button
                             className="btn btn-secondary btn-icon btn-sm"
+                            style={{ width: '28px', height: '28px' }}
                             title="Ajustar Stock (+/-)"
                             onClick={() => {
                               setStockModalPart(part);
@@ -666,26 +668,27 @@ export default function InventoryView({
                               setAdjustType('in');
                             }}
                           >
-                            <RefreshCw size={14} />
+                            <RefreshCw size={13} />
                           </button>
                           <button
                             className="btn btn-secondary btn-icon btn-sm"
+                            style={{ width: '28px', height: '28px' }}
                             title="Editar Repuesto"
                             onClick={() => handleOpenEdit(part)}
                           >
-                            <Edit2 size={14} />
+                            <Edit2 size={13} />
                           </button>
                           <button
                             className="btn btn-secondary btn-icon btn-sm"
                             title="Eliminar Repuesto"
-                            style={{ color: 'var(--danger)' }}
+                            style={{ color: 'var(--danger)', width: '28px', height: '28px' }}
                             onClick={() => {
                               if (window.confirm(`¿Seguro que deseas eliminar "${part.name}"?`)) {
                                 onDeletePart(part.id);
                               }
                             }}
                           >
-                            <Trash2 size={14} />
+                            <Trash2 size={13} />
                           </button>
                         </div>
                       </td>
@@ -697,17 +700,18 @@ export default function InventoryView({
           </table>
         </div>
 
-        {/* Pagination Controls */}
+        {/* Pagination Controls (Always visible at bottom) */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '14px 20px',
+          padding: '8px 16px',
           borderTop: '1px solid var(--border-color)',
           backgroundColor: 'var(--bg-tertiary)',
           flexWrap: 'wrap',
-          gap: '12px',
-          fontSize: '0.84rem'
+          gap: '10px',
+          fontSize: '0.78rem',
+          flexShrink: 0
         }}>
           <div style={{ color: 'var(--text-secondary)' }}>
             Mostrando <strong style={{ color: 'var(--text-primary)' }}>

@@ -347,33 +347,35 @@ export default function ReceiptModal({ sale, settings, onClose }) {
       <div 
         className="modal-content" 
         onClick={(e) => e.stopPropagation()} 
-        style={{ maxWidth: '530px' }}
+        style={{ maxWidth: '520px', display: 'flex', flexDirection: 'column', maxHeight: '94vh', overflow: 'hidden' }}
       >
-        <div className="modal-header no-print">
+        <div className="modal-header no-print" style={{ flexShrink: 0, padding: '10px 16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <CheckCircle2 color="var(--success)" size={20} />
-            <span style={{ fontWeight: 700, fontSize: '1rem' }}>
+            <CheckCircle2 color="var(--success)" size={18} />
+            <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>
               {isProforma ? 'Cotización Generada' : 'Factura / Comprobante Emitido'}
             </span>
           </div>
-          <button className="btn btn-secondary btn-icon btn-sm" onClick={onClose}>
-            <X size={16} />
+          <button className="btn btn-secondary btn-icon btn-sm" onClick={onClose} style={{ width: '30px', height: '30px' }}>
+            <X size={15} />
           </button>
         </div>
 
-        {/* Printable Ticket / Invoice Area (Este bloque exacto se convierte en el PDF y la Foto) */}
-        <div 
-          ref={receiptRef}
-          className="printable-area" 
-          style={{
-            padding: '24px',
-            backgroundColor: '#ffffff',
-            color: '#111827',
-            fontFamily: "'JetBrains Mono', 'Courier New', Courier, monospace",
-            fontSize: '0.82rem',
-            lineHeight: '1.45'
-          }}
-        >
+        {/* Scrollable wrapper for the printable receipt on screen so footer buttons are always visible */}
+        <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+          {/* Printable Ticket / Invoice Area (Este bloque exacto se convierte en el PDF y la Foto) */}
+          <div 
+            ref={receiptRef}
+            className="printable-area" 
+            style={{
+              padding: '20px 22px',
+              backgroundColor: '#ffffff',
+              color: '#111827',
+              fontFamily: "'JetBrains Mono', 'Courier New', Courier, monospace",
+              fontSize: '0.8rem',
+              lineHeight: '1.4'
+            }}
+          >
           {/* Store Info */}
           <div style={{ textAlign: 'center', marginBottom: '14px' }}>
             <div style={{
@@ -564,15 +566,17 @@ export default function ReceiptModal({ sale, settings, onClose }) {
             <p style={{ marginTop: '4px', fontWeight: 700 }}>¡Gracias por confiar en su tienda de repuestos!</p>
           </div>
         </div>
+        </div>
 
         {/* Panel de Envío a WhatsApp (PDF o Foto) - No se imprime */}
         <div className="no-print" style={{
-          padding: '14px 20px',
+          padding: '10px 16px',
           backgroundColor: 'var(--bg-secondary)',
           borderTop: '1px solid var(--border-color)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '10px'
+          gap: '8px',
+          flexShrink: 0
         }}>
           <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' }}>
             <span>FORMATO DE FACTURA PARA WHATSAPP:</span>

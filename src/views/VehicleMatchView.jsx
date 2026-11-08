@@ -105,44 +105,45 @@ export default function VehicleMatchView({
   };
 
   return (
-    <div style={{ padding: 'clamp(12px, 2.5vw, 24px)', display: 'flex', flexDirection: 'column', gap: '16px' }} className="animate-fade-in">
-      {/* Header Banner */}
+    <div className="view-full-screen animate-fade-in">
+      {/* Header Banner & Vehicle Type Switcher */}
       <div style={{
         backgroundColor: 'var(--bg-secondary)',
         border: '1px solid var(--border-color)',
-        borderRadius: 'var(--radius-xl)',
-        padding: 'clamp(14px, 2.5vw, 22px)',
+        borderRadius: 'var(--radius-lg)',
+        padding: '10px 16px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '14px'
+        gap: '10px',
+        flexShrink: 0
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
           <div style={{
-            width: '44px',
-            height: '44px',
+            width: '36px',
+            height: '36px',
             borderRadius: 'var(--radius-md)',
             backgroundColor: 'var(--primary-light)',
             color: 'var(--primary)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '1.3rem',
+            fontSize: '1.1rem',
             flexShrink: 0
           }}>
             {vehicleType === 'moto' ? '🏍️' : '🚗'}
           </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <h2 style={{ fontSize: 'clamp(1.15rem, 3.5vw, 1.35rem)', fontWeight: 800 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+              <h2 style={{ fontSize: 'clamp(1rem, 2.2vw, 1.2rem)', fontWeight: 800, lineHeight: 1.15 }}>
                 Buscador de Compatibilidad
               </h2>
-              <span className="badge badge-primary">
+              <span className="badge badge-primary" style={{ fontSize: '0.66rem', padding: '2px 7px' }}>
                 {vehicleType === 'moto' ? 'MOTOS' : 'AUTOMOTRIZ'}
               </span>
             </div>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+            <p style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>
               {vehicleType === 'moto' 
                 ? 'Kits de arrastre, cilindros, pastillas, CDI y repuestos para motos.'
                 : 'Aceites minerales, semi-sintéticos, refrigerantes y repuestos para carros.'}
@@ -150,52 +151,43 @@ export default function VehicleMatchView({
           </div>
         </div>
 
-        <button 
-          className="btn btn-primary"
-          onClick={handleSendPosWithVehicle}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: 700, width: '100%', maxWidth: '380px', minHeight: '42px' }}
-        >
-          <ShoppingCart size={16} />
-          <span>Abrir Mostrador con este {vehicleType === 'moto' ? 'Modelo' : 'Carro'}</span>
-        </button>
-      </div>
-
-      {/* Switcher: Motos vs Carros */}
-      <div style={{
-        display: 'flex',
-        gap: '8px',
-        backgroundColor: 'var(--bg-card)',
-        padding: '6px',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--border-color)',
-        width: '100%',
-        flexWrap: 'wrap'
-      }}>
-        <button
-          className={`btn ${vehicleType === 'moto' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => handleTypeChange('moto')}
-          style={{ padding: '9px 16px', fontWeight: 700, gap: '6px', flex: '1 1 200px' }}
-        >
-          <span>🏍️ Repuestos de Motos (Bera, Empire, Toro, MD)</span>
-        </button>
-        <button
-          className={`btn ${vehicleType === 'car' ? 'btn-primary' : 'btn-secondary'}`}
-          onClick={() => handleTypeChange('car')}
-          style={{ padding: '9px 16px', fontWeight: 700, gap: '6px', flex: '1 1 200px' }}
-        >
-          <span>🚗 Aceites y Repuestos Carros (Toyota, Aveo, Ford)</span>
-        </button>
+        {/* Switcher + POS Action on the same compact row */}
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            className={`btn btn-sm ${vehicleType === 'moto' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => handleTypeChange('moto')}
+            style={{ padding: '6px 12px', fontWeight: 700, fontSize: '0.76rem' }}
+          >
+            <span>🏍️ Motos (Bera, Empire, Toro, MD)</span>
+          </button>
+          <button
+            className={`btn btn-sm ${vehicleType === 'car' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => handleTypeChange('car')}
+            style={{ padding: '6px 12px', fontWeight: 700, fontSize: '0.76rem' }}
+          >
+            <span>🚗 Carros (Toyota, Aveo, Ford)</span>
+          </button>
+          <button 
+            className="btn btn-success btn-sm"
+            onClick={handleSendPosWithVehicle}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, padding: '6px 12px', fontSize: '0.76rem' }}
+          >
+            <ShoppingCart size={14} />
+            <span>Abrir POS con este {vehicleType === 'moto' ? 'Modelo' : 'Carro'}</span>
+          </button>
+        </div>
       </div>
 
       {/* 4-Step Cascading Selector */}
       <div style={{
         backgroundColor: 'var(--bg-secondary)',
-        padding: 'clamp(14px, 2.5vw, 20px)',
+        padding: '10px 14px',
         borderRadius: 'var(--radius-lg)',
         border: '1px solid var(--border-color)',
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(clamp(135px, 44vw, 200px), 1fr))',
-        gap: '12px'
+        gridTemplateColumns: 'repeat(auto-fit, minmax(clamp(135px, 20vw, 190px), 1fr))',
+        gap: '10px',
+        flexShrink: 0
       }}>
         {/* Step 1: Marca */}
         <div className="input-group" style={{ marginBottom: 0 }}>
@@ -315,28 +307,34 @@ export default function VehicleMatchView({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '12px 18px',
+        padding: '7px 14px',
         backgroundColor: 'var(--primary-light)',
         border: '1px solid var(--border-accent)',
         borderRadius: 'var(--radius-md)',
-        fontSize: '0.88rem'
+        fontSize: '0.8rem',
+        flexShrink: 0
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary-hover)', fontWeight: 700 }}>
-          <CheckCircle2 size={18} />
+          <CheckCircle2 size={16} />
           <span>
             {vehicleType === 'moto' ? '🏍️' : '🚗'} Mostrando artículos que le sirven a: <strong>{selectedMake} {selectedModel} ({selectedYear})</strong> {selectedEngine && `• ${selectedEngine}`}
           </span>
         </div>
-        <div className="badge badge-primary mono" style={{ fontSize: '0.8rem' }}>
+        <div className="badge badge-primary mono" style={{ fontSize: '0.72rem' }}>
           {matchedParts.length} artículos disponibles
         </div>
       </div>
 
-      {/* Results Grid */}
+      {/* Results Grid (Scrolls cleanly inside viewport) */}
       <div style={{
+        flex: 1,
+        minHeight: 0,
+        overflowY: 'auto',
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-        gap: '16px'
+        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+        alignContent: 'start',
+        gap: '12px',
+        paddingRight: '4px'
       }}>
         {matchedParts.length === 0 ? (
           <div style={{

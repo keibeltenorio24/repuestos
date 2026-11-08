@@ -287,17 +287,18 @@ export default function PosView({
         {/* Search Bar & Fast Vehicle Filter */}
         <div style={{
           display: 'flex',
-          gap: '10px',
+          gap: '8px',
           alignItems: 'center',
           backgroundColor: 'var(--bg-secondary)',
-          padding: '12px 16px',
-          borderRadius: 'var(--radius-lg)',
-          border: '1px solid var(--border-color)'
+          padding: '8px 12px',
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid var(--border-color)',
+          flexShrink: 0
         }}>
           <div style={{ position: 'relative', flex: 1 }}>
             <Search 
-              size={18} 
-              style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} 
+              size={16} 
+              style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} 
             />
             <input
               ref={searchInputRef}
@@ -306,7 +307,7 @@ export default function PosView({
               placeholder="Buscar por Nombre, Código OEM (ej: 04465-02220), Código de Barras o Marca..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ paddingLeft: '38px', fontSize: '0.92rem' }}
+              style={{ paddingLeft: '34px', fontSize: '0.84rem', paddingTop: '6px', paddingBottom: '6px' }}
             />
             {searchQuery && (
               <button
@@ -322,7 +323,7 @@ export default function PosView({
                   cursor: 'pointer'
                 }}
               >
-                <X size={16} />
+                <X size={15} />
               </button>
             )}
           </div>
@@ -341,35 +342,35 @@ export default function PosView({
                 }
               }
             }}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '6px 10px', fontSize: '0.76rem' }}
             title="Filtrar repuestos para el vehículo del cliente"
           >
-            <Car size={16} />
+            <Car size={15} />
             <span>{activeVehicle ? `${activeVehicle.make}` : 'Filtrar por Auto'}</span>
-            {activeVehicle && <X size={14} />}
+            {activeVehicle && <X size={13} />}
           </button>
         </div>
 
         {/* Vehicle Type Switcher & Categories Horizontal Scroll */}
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', overflowX: 'auto', paddingBottom: '4px', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', overflowX: 'auto', paddingBottom: '2px', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', flexShrink: 0 }}>
           <button
             className={`btn btn-sm ${vehicleTypeFilter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => setVehicleTypeFilter('all')}
-            style={{ borderRadius: 'var(--radius-full)', padding: '5px 12px', fontSize: '0.78rem', whiteSpace: 'nowrap', flexShrink: 0 }}
+            style={{ borderRadius: 'var(--radius-full)', padding: '4px 10px', fontSize: '0.74rem', whiteSpace: 'nowrap', flexShrink: 0 }}
           >
             Todos ({parts.length})
           </button>
           <button
             className={`btn btn-sm ${vehicleTypeFilter === 'moto' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => setVehicleTypeFilter('moto')}
-            style={{ borderRadius: 'var(--radius-full)', padding: '5px 12px', fontSize: '0.78rem', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}
+            style={{ borderRadius: 'var(--radius-full)', padding: '4px 10px', fontSize: '0.74rem', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}
           >
             🏍️ Motos (Bera, Empire, Toro, MD)
           </button>
           <button
             className={`btn btn-sm ${vehicleTypeFilter === 'car' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => setVehicleTypeFilter('car')}
-            style={{ borderRadius: 'var(--radius-full)', padding: '5px 12px', fontSize: '0.78rem', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}
+            style={{ borderRadius: 'var(--radius-full)', padding: '4px 10px', fontSize: '0.74rem', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}
           >
             🚗 Aceites & Carros (Shell, Castrol, PDV)
           </button>
@@ -378,15 +379,16 @@ export default function PosView({
         {/* Categories Horizontal Scroll */}
         <div style={{
           display: 'flex',
-          gap: '8px',
+          gap: '6px',
           overflowX: 'auto',
-          paddingBottom: '4px',
-          scrollbarWidth: 'none'
+          paddingBottom: '2px',
+          scrollbarWidth: 'none',
+          flexShrink: 0
         }}>
           <button
             className={`btn btn-sm ${selectedCategory === 'all' ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => setSelectedCategory('all')}
-            style={{ borderRadius: 'var(--radius-full)', padding: '5px 12px', fontSize: '0.76rem' }}
+            style={{ borderRadius: 'var(--radius-full)', padding: '4px 10px', fontSize: '0.73rem', whiteSpace: 'nowrap' }}
           >
             Todas las categorías
           </button>
@@ -395,7 +397,7 @@ export default function PosView({
               key={cat.id}
               className={`btn btn-sm ${selectedCategory === cat.id ? 'btn-primary' : 'btn-secondary'}`}
               onClick={() => setSelectedCategory(cat.id)}
-              style={{ borderRadius: 'var(--radius-full)', padding: '6px 14px', whiteSpace: 'nowrap' }}
+              style={{ borderRadius: 'var(--radius-full)', padding: '4px 12px', fontSize: '0.73rem', whiteSpace: 'nowrap' }}
             >
               {cat.name}
             </button>
@@ -405,10 +407,12 @@ export default function PosView({
         {/* Parts Grid (2 cols on mobile, auto-fill on desktop) */}
         <div style={{
           flex: 1,
+          minHeight: 0,
           overflowY: 'auto',
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(clamp(140px, 44vw, 220px), 1fr))',
-          gap: '12px',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(clamp(140px, 44vw, 200px), 1fr))',
+          alignContent: 'start',
+          gap: '10px',
           paddingRight: '4px'
         }}>
           {filteredParts.length === 0 ? (
@@ -585,7 +589,8 @@ export default function PosView({
           display: 'grid',
           gridTemplateColumns: '1fr 1fr 1fr',
           borderBottom: '1px solid var(--border-color)',
-          backgroundColor: 'var(--bg-tertiary)'
+          backgroundColor: 'var(--bg-tertiary)',
+          flexShrink: 0
         }}>
           {[
             { id: 'ticket', label: 'Ticket Caja' },
@@ -596,12 +601,12 @@ export default function PosView({
               key={tab.id}
               onClick={() => setDocType(tab.id)}
               style={{
-                padding: '10px 4px',
+                padding: '8px 4px',
                 border: 'none',
                 background: docType === tab.id ? 'var(--bg-secondary)' : 'transparent',
                 color: docType === tab.id ? 'var(--primary-hover)' : 'var(--text-muted)',
                 fontWeight: docType === tab.id ? 700 : 500,
-                fontSize: '0.78rem',
+                fontSize: '0.75rem',
                 cursor: 'pointer',
                 borderBottom: docType === tab.id ? '2px solid var(--primary)' : 'none',
                 transition: 'all 0.15s ease'
@@ -614,21 +619,22 @@ export default function PosView({
 
         {/* Customer Information Bar */}
         <div style={{
-          padding: '12px 16px',
+          padding: '8px 12px',
           borderBottom: '1px solid var(--border-color)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '8px',
-          backgroundColor: 'var(--bg-card)'
+          gap: '6px',
+          backgroundColor: 'var(--bg-card)',
+          flexShrink: 0
         }}>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '6px' }}>
             <input
               type="text"
               className="input"
               placeholder="Nombre del Cliente / Taller..."
               value={customer.name}
               onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
-              style={{ fontSize: '0.82rem', padding: '6px 10px', flex: 1 }}
+              style={{ fontSize: '0.78rem', padding: '5px 8px', flex: 1 }}
             />
             <input
               type="text"
@@ -636,30 +642,30 @@ export default function PosView({
               placeholder="Cédula / RIF"
               value={customer.docId}
               onChange={(e) => setCustomer({ ...customer, docId: e.target.value })}
-              style={{ width: '115px', fontSize: '0.82rem', padding: '6px 10px' }}
+              style={{ width: '105px', fontSize: '0.78rem', padding: '5px 8px' }}
             />
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
             <input
               type="tel"
               className="input"
               placeholder="WhatsApp del Cliente (ej: +58 412 1234567)"
               value={customer.phone}
               onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
-              style={{ fontSize: '0.8rem', padding: '5px 10px', flex: 1 }}
+              style={{ fontSize: '0.76rem', padding: '4px 8px', flex: 1 }}
             />
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.74rem', cursor: 'pointer', color: 'var(--text-secondary)' }}>
               <input
                 type="checkbox"
                 checked={customer.isWorkshop}
                 onChange={(e) => setCustomer({ ...customer, isWorkshop: e.target.checked })}
               />
               <span style={{ fontWeight: customer.isWorkshop ? 700 : 400, color: customer.isWorkshop ? 'var(--accent-cyan)' : 'inherit' }}>
-                ¿Es Taller Mecánico Aliado? (Precio Mayorista)
+                ¿Taller Mecánico Aliado? (Mayorista)
               </span>
             </label>
 
@@ -667,7 +673,7 @@ export default function PosView({
               <button 
                 onClick={clearCart} 
                 className="btn btn-secondary btn-sm" 
-                style={{ color: 'var(--danger)', padding: '2px 8px', fontSize: '0.72rem' }}
+                style={{ color: 'var(--danger)', padding: '2px 8px', fontSize: '0.7rem' }}
                 title="Vaciar ticket"
               >
                 Vaciar
@@ -679,11 +685,12 @@ export default function PosView({
         {/* Cart Items List */}
         <div style={{
           flex: 1,
+          minHeight: 0,
           overflowY: 'auto',
-          padding: '12px 16px',
+          padding: '8px 12px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '10px'
+          gap: '8px'
         }}>
           {cart.length === 0 ? (
             <div style={{
@@ -790,15 +797,16 @@ export default function PosView({
 
         {/* Totals & Checkout Button */}
         <div style={{
-          padding: '16px',
+          padding: '10px 14px',
           borderTop: '1px solid var(--border-color)',
           backgroundColor: 'var(--bg-card)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '10px'
+          gap: '8px',
+          flexShrink: 0
         }}>
           {/* Subtotal, Descuento, Base Imponible, IVA */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '0.82rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '0.78rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
               <span>Subtotal (Sin IVA):</span>
               <span>{settings.currencySymbol}{subtotal.toFixed(2)}</span>
@@ -811,7 +819,7 @@ export default function PosView({
                   <button
                     key={pct}
                     className={`btn btn-sm ${discountPercent === pct ? 'btn-primary' : 'btn-secondary'}`}
-                    style={{ padding: '2px 7px', fontSize: '0.72rem' }}
+                    style={{ padding: '1px 6px', fontSize: '0.7rem', minHeight: '22px' }}
                     onClick={() => setDiscountPercent(pct)}
                   >
                     {pct}%
@@ -842,14 +850,14 @@ export default function PosView({
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'baseline',
-              paddingTop: '6px',
+              paddingTop: '4px',
               borderTop: '1px dashed var(--border-color)',
-              marginTop: '4px'
+              marginTop: '2px'
             }}>
-              <span style={{ fontWeight: 800, fontSize: '0.98rem', color: 'var(--text-primary)' }}>
+              <span style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--text-primary)' }}>
                 TOTAL (IVA INCL.):
               </span>
-              <span style={{ fontWeight: 900, fontSize: '1.5rem', color: 'var(--primary-hover)' }}>
+              <span style={{ fontWeight: 900, fontSize: '1.3rem', color: 'var(--primary-hover)' }}>
                 {settings.currencySymbol}{grandTotal.toFixed(2)}
               </span>
             </div>
@@ -857,7 +865,7 @@ export default function PosView({
 
           {/* Action Button: Checkout / Emitir Proforma */}
           <button
-            className={`btn ${docType === 'proforma' ? 'btn-secondary' : 'btn-success'} btn-lg`}
+            className={`btn ${docType === 'proforma' ? 'btn-secondary' : 'btn-success'}`}
             disabled={cart.length === 0}
             onClick={() => {
               if (docType === 'proforma') {
@@ -872,7 +880,8 @@ export default function PosView({
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
-              fontWeight: 800
+              fontWeight: 800,
+              padding: '10px 16px'
             }}
           >
             {docType === 'proforma' ? (
