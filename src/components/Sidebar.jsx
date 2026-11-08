@@ -3,11 +3,9 @@ import {
   LayoutDashboard, 
   ShoppingCart, 
   Package, 
-  Car, 
   FileText, 
   Settings, 
   AlertTriangle,
-  Wrench,
   X
 } from 'lucide-react';
 
@@ -27,7 +25,6 @@ export default function Sidebar({
     { id: 'dashboard', label: 'Panel Principal', icon: LayoutDashboard },
     { id: 'pos', label: 'Punto de Venta (POS)', icon: ShoppingCart, highlight: true },
     { id: 'inventory', label: 'Inventario de Repuestos', icon: Package, badge: parts.length },
-    { id: 'vehicles', label: 'Buscador Vehicular', icon: Car },
     { id: 'sales', label: 'Ventas y Cotizaciones', icon: FileText },
     { id: 'settings', label: 'Configuración / Marca', icon: Settings },
   ];
@@ -53,12 +50,14 @@ export default function Sidebar({
   const sidebarContent = (isMobileMode = false) => (
     <aside 
       style={{
-        width: isMobileMode ? '290px' : (collapsed ? '80px' : 'var(--sidebar-width)'),
+        width: isMobileMode ? '280px' : (collapsed ? '72px' : 'var(--sidebar-width)'),
+        minWidth: isMobileMode ? '280px' : (collapsed ? '72px' : 'var(--sidebar-width)'),
+        flexShrink: 0,
         backgroundColor: 'var(--bg-secondary)',
         borderRight: '1px solid var(--border-color)',
         display: 'flex',
         flexDirection: 'column',
-        transition: 'width 0.2s ease, transform 0.25s ease',
+        transition: 'width 0.2s ease, min-width 0.2s ease, transform 0.25s ease',
         height: '100vh',
         position: isMobileMode ? 'fixed' : 'sticky',
         top: 0,
@@ -66,27 +65,30 @@ export default function Sidebar({
         bottom: 0,
         zIndex: isMobileMode ? 9999 : 100,
         userSelect: 'none',
+        overflow: 'hidden',
         boxShadow: isMobileMode ? '4px 0 24px rgba(0,0,0,0.6)' : 'none'
       }}
     >
       {/* Brand Header with Neon Logo */}
       <div style={{
-        padding: (!isMobileMode && collapsed) ? '10px 10px' : '12px 14px',
+        height: 'var(--header-height)',
+        padding: (!isMobileMode && collapsed) ? '0 8px' : '0 14px',
         borderBottom: '1px solid var(--border-color)',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent: (!isMobileMode && collapsed) ? 'center' : 'space-between',
         gap: '10px',
+        flexShrink: 0,
         background: 'linear-gradient(180deg, rgba(0, 229, 255, 0.06) 0%, transparent 100%)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden', minWidth: 0 }}>
           <div style={{
-            width: '38px',
-            height: '38px',
-            borderRadius: '9px',
+            width: '36px',
+            height: '36px',
+            borderRadius: '8px',
             overflow: 'hidden',
             border: '1.5px solid rgba(0, 229, 255, 0.55)',
-            boxShadow: '0 0 12px rgba(0, 229, 255, 0.35)',
+            boxShadow: '0 0 10px rgba(0, 229, 255, 0.3)',
             flexShrink: 0,
             backgroundColor: '#040711',
             display: 'flex',
@@ -94,15 +96,15 @@ export default function Sidebar({
             justifyContent: 'center'
           }}>
             <img 
-              src="/logo.jpg" 
-              alt="B&G Multiservicios Logo" 
+              src={settings?.logoUrl || "/logo.jpg"} 
+              alt="Logo" 
               style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
             />
           </div>
           {(isMobileMode || !collapsed) && (
-            <div style={{ overflow: 'hidden' }}>
+            <div style={{ overflow: 'hidden', minWidth: 0 }}>
               <h1 className="brand-title" style={{
-                fontSize: '0.94rem',
+                fontSize: '0.92rem',
                 fontWeight: 900,
                 color: 'var(--text-primary)',
                 lineHeight: 1.15,
@@ -112,16 +114,16 @@ export default function Sidebar({
               }}>
                 {settings.storeName || 'B&G Multiservicios'}
               </h1>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '1px' }}>
                 <span style={{
-                  fontSize: '0.62rem',
+                  fontSize: '0.6rem',
                   fontWeight: 800,
                   color: 'var(--primary)',
                   letterSpacing: '0.06em',
                   textTransform: 'uppercase',
                   textShadow: '0 0 10px rgba(255, 119, 0, 0.45)'
                 }}>
-                  MULTISERVICIOS 2024
+                  SISTEMA DE REPUESTOS
                 </span>
               </div>
             </div>
@@ -134,9 +136,9 @@ export default function Sidebar({
             className="btn btn-secondary btn-icon btn-sm"
             onClick={onCloseMobile}
             title="Cerrar menú"
-            style={{ flexShrink: 0, width: '34px', height: '34px' }}
+            style={{ flexShrink: 0, width: '32px', height: '32px' }}
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         )}
       </div>
@@ -144,11 +146,12 @@ export default function Sidebar({
       {/* Navigation List */}
       <nav style={{
         flex: 1,
-        padding: '16px 12px',
+        padding: '12px 10px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '6px',
-        overflowY: 'auto'
+        gap: '5px',
+        overflowY: 'auto',
+        overflowX: 'hidden'
       }}>
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -164,14 +167,16 @@ export default function Sidebar({
               style={{
                 width: '100%',
                 justifyContent: (!isMobileMode && collapsed) ? 'center' : 'flex-start',
-                padding: (!isMobileMode && collapsed) ? '12px 0' : '11px 14px',
+                padding: (!isMobileMode && collapsed) ? '10px 0' : '10px 12px',
+                gap: '10px',
                 borderRadius: 'var(--radius-md)',
                 backgroundColor: isActive ? 'var(--primary-light)' : 'transparent',
                 color: isActive ? 'var(--primary-hover)' : 'var(--text-secondary)',
                 border: isActive ? '1px solid var(--border-accent)' : '1px solid transparent',
-                fontWeight: isActive ? 600 : 500,
+                fontWeight: isActive ? 700 : 500,
                 transition: 'all 0.15s ease',
-                position: 'relative'
+                position: 'relative',
+                overflow: 'hidden'
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
@@ -186,24 +191,32 @@ export default function Sidebar({
                 }
               }}
             >
-              <Icon size={20} style={{ flexShrink: 0 }} />
+              <Icon size={18} style={{ flexShrink: 0 }} />
               {showFullLabel && (
-                <span style={{ flex: 1, textAlign: 'left', fontSize: '0.88rem' }}>
+                <span style={{ 
+                  flex: 1, 
+                  textAlign: 'left', 
+                  fontSize: '0.82rem',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}>
                   {item.label}
                 </span>
               )}
               {showFullLabel && item.badge !== undefined && item.badge > 0 && (
-                <span className="badge badge-primary mono" style={{ fontSize: '0.7rem', padding: '2px 7px' }}>
+                <span className="badge badge-primary mono" style={{ fontSize: '0.66rem', padding: '1px 6px', flexShrink: 0 }}>
                   {item.badge}
                 </span>
               )}
               {showFullLabel && item.highlight && (
                 <span style={{
-                  width: '8px',
-                  height: '8px',
+                  width: '7px',
+                  height: '7px',
                   borderRadius: '50%',
                   backgroundColor: 'var(--success)',
-                  boxShadow: '0 0 8px var(--success)'
+                  boxShadow: '0 0 8px var(--success)',
+                  flexShrink: 0
                 }} />
               )}
             </button>
@@ -214,21 +227,22 @@ export default function Sidebar({
       {/* Critical Stock Alert Box (Bottom) */}
       {(isMobileMode || !collapsed) && lowStockCount > 0 && (
         <div style={{
-          margin: '12px 14px',
-          padding: '12px 14px',
+          margin: '8px 10px',
+          padding: '9px 12px',
           borderRadius: 'var(--radius-md)',
           backgroundColor: 'var(--warning-light)',
           border: '1px solid rgba(245, 158, 11, 0.3)',
           display: 'flex',
           alignItems: 'center',
-          gap: '10px'
+          gap: '8px',
+          flexShrink: 0
         }}>
-          <AlertTriangle size={18} color="var(--warning)" style={{ flexShrink: 0 }} />
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--warning)' }}>
+          <AlertTriangle size={16} color="var(--warning)" style={{ flexShrink: 0 }} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--warning)' }}>
               Stock Crítico ({lowStockCount})
             </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+            <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
               Repuestos por reponer
             </div>
           </div>
@@ -237,34 +251,35 @@ export default function Sidebar({
 
       {/* Footer / Software info */}
       <div style={{
-        padding: '14px 16px',
+        padding: '10px 12px',
         borderTop: '1px solid var(--border-color)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: (!isMobileMode && collapsed) ? 'center' : 'space-between',
-        fontSize: '0.74rem',
-        color: 'var(--text-muted)'
+        fontSize: '0.7rem',
+        color: 'var(--text-muted)',
+        flexShrink: 0
       }}>
         {(!isMobileMode && collapsed) ? (
           <button 
             className="btn btn-secondary btn-sm"
             onClick={() => setCollapsed(false)}
-            style={{ padding: '6px 8px', fontSize: '0.7rem' }}
+            style={{ padding: '4px 8px', fontSize: '0.68rem' }}
             title="Expandir menú"
           >
             ▶
           </button>
         ) : (
           <>
-            <div>
+            <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
               <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>AutoPartes Pro</span>
-              <div>v1.0 • Listo para venta</div>
+              <div>v1.0 • Sistema POS</div>
             </div>
             {!isMobileMode && (
               <button 
                 className="btn btn-secondary btn-sm"
                 onClick={() => setCollapsed(true)}
-                style={{ padding: '4px 8px', fontSize: '0.7rem' }}
+                style={{ padding: '3px 7px', fontSize: '0.68rem', flexShrink: 0 }}
                 title="Colapsar menú"
               >
                 ◀
@@ -279,7 +294,7 @@ export default function Sidebar({
   return (
     <>
       {/* Desktop Sidebar */}
-      <div className="desktop-only" style={{ display: 'contents' }}>
+      <div className="desktop-only" style={{ flexShrink: 0 }}>
         {sidebarContent(false)}
       </div>
 

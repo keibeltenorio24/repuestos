@@ -11,7 +11,6 @@ import StockAlertModal from './components/StockAlertModal';
 import DashboardView from './views/DashboardView';
 import PosView from './views/PosView';
 import InventoryView from './views/InventoryView';
-import VehicleMatchView from './views/VehicleMatchView';
 import SalesHistoryView from './views/SalesHistoryView';
 import SettingsView from './views/SettingsView';
 
@@ -20,13 +19,9 @@ export default function App() {
   const [parts, setParts] = useState([]);
   const [sales, setSales] = useState([]);
   const [settings, setSettings] = useState(storage.getSettings());
-  const [vehicles, setVehicles] = useState([]);
   const [theme, setTheme] = useState(storage.getTheme());
   const [collapsedSidebar, setCollapsedSidebar] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  // Filtro vehicular temporal para mostrador
-  const [activeVehicle, setActiveVehicle] = useState(null);
 
   // Modales globales
   const [activeReceiptSale, setActiveReceiptSale] = useState(null);
@@ -38,7 +33,6 @@ export default function App() {
     setParts(storage.getParts());
     setSales(storage.getSales());
     setSettings(storage.getSettings());
-    setVehicles(storage.getVehicles());
   };
 
   useEffect(() => {
@@ -140,10 +134,7 @@ export default function App() {
           toggleTheme={toggleTheme}
           parts={parts}
           onOpenAlerts={() => setIsAlertModalOpen(true)}
-          activeVehicle={activeVehicle}
-          onClearVehicle={() => setActiveVehicle(null)}
           currentView={currentView}
-          setCurrentView={setCurrentView}
           onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
         />
 
@@ -164,9 +155,6 @@ export default function App() {
             <PosView
               parts={parts}
               settings={settings}
-              vehicles={vehicles}
-              activeVehicle={activeVehicle}
-              setActiveVehicle={setActiveVehicle}
               onCompleteSale={handleCompleteSale}
               onNavigate={(view) => setCurrentView(view)}
               onLoadDemoParts={handleLoadDemoParts}
@@ -177,22 +165,11 @@ export default function App() {
             <InventoryView
               parts={parts}
               settings={settings}
-              vehicles={vehicles}
               onCreatePart={handleCreatePart}
               onUpdatePart={handleUpdatePart}
               onDeletePart={handleDeletePart}
               onAdjustStock={handleAdjustStock}
               onLoadDemoParts={handleLoadDemoParts}
-            />
-          )}
-
-          {currentView === 'vehicles' && (
-            <VehicleMatchView
-              parts={parts}
-              vehicles={vehicles}
-              settings={settings}
-              onSelectVehicleForPos={(veh) => setActiveVehicle(veh)}
-              onNavigate={(view) => setCurrentView(view)}
             />
           )}
 

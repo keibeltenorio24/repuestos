@@ -26,9 +26,6 @@ import ImagePreviewModal from '../components/ImagePreviewModal';
 export default function PosView({ 
   parts, 
   settings, 
-  vehicles, 
-  activeVehicle, 
-  setActiveVehicle,
   onCompleteSale,
   onNavigate,
   onLoadDemoParts
@@ -65,7 +62,17 @@ export default function PosView({
   }, []);
 
   const [mobileTab, setMobileTab] = useState('catalog'); // 'catalog' | 'cart'
-  const [vehicleTypeFilter, setVehicleTypeFilter] = useState('all'); // all | moto | car
+
+  // Categorías dinámicas (incluye cualquier categoría personalizada escrita por el cliente)
+  const getCategoryLabel = (catValue) => {
+    if (!catValue) return 'Sin Categoría';
+    const found = CATEGORIES.find(c => c.id.toLowerCase() === catValue.toLowerCase());
+    return found ? found.name : catValue;
+  };
+
+  const uniqueCategories = Array.from(
+    new Set(parts.map(p => (p.category || '').trim()).filter(Boolean))
+  );
 
   // Filtrado de repuestos
   const filteredParts = parts.filter(part => {
@@ -75,30 +82,13 @@ export default function PosView({
       part.sku.toLowerCase().includes(q) ||
       part.oemNumber.toLowerCase().includes(q) ||
       part.barcode.includes(q) ||
-      part.brand.toLowerCase().includes(q)
+      part.brand.toLowerCase().includes(q) ||
+      (part.category && part.category.toLowerCase().includes(q))
     );
 
-    const matchesCategory = selectedCategory === 'all' || part.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || (part.category || '').toLowerCase() === selectedCategory.toLowerCase();
 
-    const matchesVehicleType = vehicleTypeFilter === 'all' || 
-      (vehicleTypeFilter === 'moto' && (part.vehicleType === 'moto' || !part.vehicleType)) ||
-      (vehicleTypeFilter === 'car' && part.vehicleType === 'car');
-
-    let matchesVehicle = true;
-    if (activeVehicle && activeVehicle.make) {
-      if (!part.compatibleVehicles || part.compatibleVehicles.length === 0) {
-        matchesVehicle = false;
-      } else {
-        matchesVehicle = part.compatibleVehicles.some(cv => {
-          const makeMatch = cv.make.toLowerCase() === activeVehicle.make.toLowerCase();
-          const modelMatch = !activeVehicle.model || cv.model.toLowerCase() === activeVehicle.model.toLowerCase();
-          const yearMatch = !activeVehicle.year || (activeVehicle.year >= cv.yearStart && activeVehicle.year <= cv.yearEnd);
-          return makeMatch && modelMatch && yearMatch;
-        });
-      }
-    }
-
-    return matchesQuery && matchesCategory && matchesVehicleType && matchesVehicle;
+    return matchesQuery && matchesCategory;
   });
 
   // Agregar al carrito
@@ -284,7 +274,7 @@ export default function PosView({
 
       {/* LEFT COLUMN: Catálogo y Búsqueda de Mostrador */}
       <div className={`pos-catalog-col ${mobileTab !== 'catalog' ? 'pos-tab-hidden' : ''}`}>
-        {/* Search Bar & Fast Vehicle Filter */}
+        {/* Search Bar */}
         <div style={{
           display: 'flex',
           gap: '8px',
@@ -304,7 +294,7 @@ export default function PosView({
               ref={searchInputRef}
               type="text"
               className="input"
-              placeholder="Buscar por Nombre, Código OEM (ej: 04465-02220), Código de Barras o Marca..."
+              placeholder="Buscar repuesto por Nombre, Código OEM, SKU, Código de Barras, Marca o Categoría..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{ paddingLeft: '34px', fontSize: '0.84rem', paddingTop: '6px', paddingBottom: '6px' }}
@@ -327,53 +317,6 @@ export default function PosView({
               </button>
             )}
           </div>
-
-          {/* Quick Vehicle Filter Button */}
-          <button
-            className={`btn btn-sm ${activeVehicle ? 'btn-primary' : 'btn-secondary'}`}
-            onClick={() => {
-              if (activeVehicle) {
-                setActiveVehicle(null);
-              } else {
-                // Selector rápido
-                const make = prompt("Ingresa Marca del vehículo del cliente (ej: Toyota, Chevrolet, Ford):", "Toyota");
-                if (make) {
-                  setActiveVehicle({ make, model: '', year: null });
-                }
-              }
-            }}
-            style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '6px 10px', fontSize: '0.76rem' }}
-            title="Filtrar repuestos para el vehículo del cliente"
-          >
-            <Car size={15} />
-            <span>{activeVehicle ? `${activeVehicle.make}` : 'Filtrar por Auto'}</span>
-            {activeVehicle && <X size={13} />}
-          </button>
-        </div>
-
-        {/* Vehicle Type Switcher & Categories Horizontal Scroll */}
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', overflowX: 'auto', paddingBottom: '2px', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', flexShrink: 0 }}>
-          <button
-            className={`btn btn-sm ${vehicleTypeFilter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
-            onClick={() => setVehicleTypeFilter('all')}
-            style={{ borderRadius: 'var(--radius-full)', padding: '4px 10px', fontSize: '0.74rem', whiteSpace: 'nowrap', flexShrink: 0 }}
-          >
-            Todos ({parts.length})
-          </button>
-          <button
-            className={`btn btn-sm ${vehicleTypeFilter === 'moto' ? 'btn-primary' : 'btn-secondary'}`}
-            onClick={() => setVehicleTypeFilter('moto')}
-            style={{ borderRadius: 'var(--radius-full)', padding: '4px 10px', fontSize: '0.74rem', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}
-          >
-            🏍️ Motos (Bera, Empire, Toro, MD)
-          </button>
-          <button
-            className={`btn btn-sm ${vehicleTypeFilter === 'car' ? 'btn-primary' : 'btn-secondary'}`}
-            onClick={() => setVehicleTypeFilter('car')}
-            style={{ borderRadius: 'var(--radius-full)', padding: '4px 10px', fontSize: '0.74rem', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}
-          >
-            🚗 Aceites & Carros (Shell, Castrol, PDV)
-          </button>
         </div>
 
         {/* Categories Horizontal Scroll */}
@@ -390,16 +333,16 @@ export default function PosView({
             onClick={() => setSelectedCategory('all')}
             style={{ borderRadius: 'var(--radius-full)', padding: '4px 10px', fontSize: '0.73rem', whiteSpace: 'nowrap' }}
           >
-            Todas las categorías
+            Todas las categorías ({parts.length})
           </button>
-          {CATEGORIES.map(cat => (
+          {uniqueCategories.map(cat => (
             <button
-              key={cat.id}
-              className={`btn btn-sm ${selectedCategory === cat.id ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setSelectedCategory(cat.id)}
+              key={cat}
+              className={`btn btn-sm ${selectedCategory.toLowerCase() === cat.toLowerCase() ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => setSelectedCategory(cat)}
               style={{ borderRadius: 'var(--radius-full)', padding: '4px 12px', fontSize: '0.73rem', whiteSpace: 'nowrap' }}
             >
-              {cat.name}
+              {getCategoryLabel(cat)}
             </button>
           ))}
         </div>

@@ -191,32 +191,6 @@ export default function ImagePreviewModal({ part, settings, onClose, onAddToCart
                 {part.description}
               </p>
             )}
-
-            {/* Compatible Vehicles */}
-            {part.compatibleVehicles && part.compatibleVehicles.length > 0 && (
-              <div style={{ marginBottom: '16px' }}>
-                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  Vehículos que Aplica:
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                  {part.compatibleVehicles.map((v, idx) => (
-                    <span 
-                      key={idx}
-                      style={{
-                        fontSize: '0.74rem',
-                        backgroundColor: 'var(--bg-card)',
-                        border: '1px solid var(--border-color)',
-                        padding: '3px 8px',
-                        borderRadius: 'var(--radius-sm)',
-                        color: 'var(--text-primary)'
-                      }}
-                    >
-                      {v.make} {v.model} ({v.yearStart}-{v.yearEnd})
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Bottom Price & Action */}

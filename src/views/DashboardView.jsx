@@ -89,7 +89,7 @@ export default function DashboardView({
               Bienvenido a {settings.storeName}
             </h1>
             <p style={{ fontSize: '0.76rem', color: '#cbd5e1', marginTop: '2px' }}>
-              Gestión de repuestos de motos, aceites de carro, mostrador POS y compatibilidad vehicular.
+              Gestión integral de inventario de repuestos, precios, control de stock y mostrador POS.
             </p>
           </div>
         </div>
@@ -106,11 +106,11 @@ export default function DashboardView({
           </button>
           <button 
             className="btn btn-secondary btn-sm"
-            onClick={() => onNavigate('vehicles')}
+            onClick={() => onNavigate('inventory')}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '8px 14px' }}
           >
-            <Car size={16} />
-            <span>Buscador por Auto</span>
+            <Package size={16} />
+            <span>Inventario de Repuestos</span>
           </button>
         </div>
       </div>
@@ -312,7 +312,7 @@ export default function DashboardView({
                           </span>
                         </div>
                         <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                          OEM: {part.oemNumber} • {part.location || 'Almacén Central'}
+                          OEM: {part.oemNumber} • Marca: {part.brand}
                         </div>
                       </div>
 

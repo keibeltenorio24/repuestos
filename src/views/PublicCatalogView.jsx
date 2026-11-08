@@ -20,20 +20,22 @@ import { CATEGORIES } from '../data/mockData';
 export default function PublicCatalogView({ 
   parts, 
   settings, 
-  vehicles, 
   onBackToAdmin 
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [vehicleMake, setVehicleMake] = useState('');
-  const [vehicleModel, setVehicleModel] = useState('');
-  const [clientCarDetails, setClientCarDetails] = useState('');
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  // Modelos disponibles para la marca seleccionada
-  const activeMakeData = vehicles.find(v => v.make === vehicleMake);
-  const modelsForMake = activeMakeData ? activeMakeData.models : [];
+  const getCategoryLabel = (catValue) => {
+    if (!catValue) return 'General';
+    const found = CATEGORIES.find(c => c.id.toLowerCase() === catValue.toLowerCase());
+    return found ? found.name : catValue;
+  };
+
+  const uniqueCategories = Array.from(
+    new Set(parts.map(p => (p.category || '').trim()).filter(Boolean))
+  );
 
   // Filtrado de repuestos
   const filteredParts = parts.filter(part => {
@@ -42,25 +44,13 @@ export default function PublicCatalogView({
       part.name.toLowerCase().includes(q) ||
       part.sku.toLowerCase().includes(q) ||
       part.oemNumber.toLowerCase().includes(q) ||
-      part.brand.toLowerCase().includes(q)
+      part.brand.toLowerCase().includes(q) ||
+      (part.category && part.category.toLowerCase().includes(q))
     );
 
-    const matchesCategory = selectedCategory === 'all' || part.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || (part.category || '').toLowerCase() === selectedCategory.toLowerCase();
 
-    let matchesVehicle = true;
-    if (vehicleMake) {
-      if (!part.compatibleVehicles || part.compatibleVehicles.length === 0) {
-        matchesVehicle = false;
-      } else {
-        matchesVehicle = part.compatibleVehicles.some(cv => {
-          const makeOk = cv.make.toLowerCase() === vehicleMake.toLowerCase();
-          const modelOk = !vehicleModel || cv.model.toLowerCase() === vehicleModel.toLowerCase();
-          return makeOk && modelOk;
-        });
-      }
-    }
-
-    return matchesQuery && matchesCategory && matchesVehicle;
+    return matchesQuery && matchesCategory;
   });
 
   const addToCart = (part) => {
@@ -98,10 +88,6 @@ export default function PublicCatalogView({
     const rawPhone = settings.whatsapp ? settings.whatsapp.replace(/[^0-9]/g, '') : '';
     let msg = `*¡Hola ${settings.storeName}!* 👋\n`;
     msg += `Quisiera consultar disponibilidad y cotizar estos repuestos:\n\n`;
-
-    if (clientCarDetails || vehicleMake) {
-      msg += `🚗 *Mi Vehículo:* ${clientCarDetails || `${vehicleMake} ${vehicleModel}`}\n\n`;
-    }
 
     msg += `📋 *LISTA DE REPUESTOS:* \n`;
     cart.forEach((item, idx) => {
@@ -189,82 +175,38 @@ export default function PublicCatalogView({
         </div>
       </nav>
 
-      {/* Hero Vehicle Matcher Banner */}
+      {/* Hero Search Banner */}
       <div style={{
         background: 'linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%)',
-        padding: '36px 24px 28px',
+        padding: '32px 24px 24px',
         borderBottom: '1px solid var(--border-color)',
         textAlign: 'center'
       }}>
-        <div style={{ maxWidth: '850px', margin: '0 auto' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <span className="badge badge-primary">
-              🏍️ ESPECIALIDAD MOTOS VENEZOLANAS & 🚗 LUBRICANTES CARRO
-            </span>
-          </div>
-          <h2 style={{ fontSize: '2.1rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px' }}>
-            Repuestos para tu Moto (Bera, Empire, Toro, MD) y Aceites de Carro
+        <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+          <h2 style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '8px' }}>
+            Catálogo de Repuestos y Lubricantes
           </h2>
-          <p style={{ fontSize: '0.94rem', color: 'var(--text-secondary)', marginBottom: '22px' }}>
-            Consulta kits de arrastre, cilindros, frenos, bujías y lubricantes. Cotiza y pide directo a WhatsApp con entrega inmediata.
+          <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', marginBottom: '18px' }}>
+            Busca por nombre, marca, categoría o código OEM. Cotiza y pide directo a WhatsApp con atención inmediata.
           </p>
 
-          {/* Quick Vehicle Filter Controls */}
           <div style={{
             backgroundColor: 'var(--bg-card)',
-            padding: '16px',
+            padding: '12px',
             borderRadius: 'var(--radius-xl)',
             border: '1px solid var(--border-color)',
             boxShadow: 'var(--shadow-md)',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: '12px',
-            textAlign: 'left'
+            position: 'relative'
           }}>
-            <div>
-              <label className="input-label">Marca de tu Moto o Carro:</label>
-              <select
-                className="select"
-                value={vehicleMake}
-                onChange={(e) => {
-                  setVehicleMake(e.target.value);
-                  setVehicleModel('');
-                }}
-              >
-                <option value="">Todas las marcas</option>
-                {vehicles.map(v => (
-                  <option key={v.make} value={v.make}>
-                    {v.type === 'moto' ? '🏍️ ' : '🚗 '} {v.make}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="input-label">Modelo:</label>
-              <select
-                className="select"
-                value={vehicleModel}
-                disabled={!vehicleMake}
-                onChange={(e) => setVehicleModel(e.target.value)}
-              >
-                <option value="">Todos los modelos</option>
-                {modelsForMake.map(m => (
-                  <option key={m.name} value={m.name}>{m.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="input-label">O escribe código o pieza:</label>
-              <input
-                type="text"
-                className="input"
-                placeholder="Ej: Pastillas Corolla, 04465-02220..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
+            <Search size={18} style={{ position: 'absolute', left: '24px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+            <input
+              type="text"
+              className="input"
+              placeholder="Escribe el nombre del repuesto, marca o código OEM..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ paddingLeft: '38px' }}
+            />
           </div>
         </div>
       </div>
@@ -280,14 +222,14 @@ export default function PublicCatalogView({
           >
             Todos los Repuestos ({parts.length})
           </button>
-          {CATEGORIES.map(cat => (
+          {uniqueCategories.map(cat => (
             <button
-              key={cat.id}
-              className={`btn btn-sm ${selectedCategory === cat.id ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setSelectedCategory(cat.id)}
+              key={cat}
+              className={`btn btn-sm ${selectedCategory.toLowerCase() === cat.toLowerCase() ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => setSelectedCategory(cat)}
               style={{ borderRadius: 'var(--radius-full)', padding: '6px 16px', whiteSpace: 'nowrap' }}
             >
-              {cat.name}
+              {getCategoryLabel(cat)}
             </button>
           ))}
         </div>
@@ -335,32 +277,6 @@ export default function PublicCatalogView({
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.35, marginBottom: '10px' }}>
                     {part.description}
                   </p>
-
-                  {/* Vehículos compatibles resumidos */}
-                  {part.compatibleVehicles && part.compatibleVehicles.length > 0 && (
-                    <div style={{
-                      backgroundColor: 'var(--bg-tertiary)',
-                      padding: '8px 10px',
-                      borderRadius: 'var(--radius-sm)',
-                      fontSize: '0.74rem',
-                      color: 'var(--text-secondary)'
-                    }}>
-                      <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Car size={13} color="var(--primary)" />
-                        <span>Aplica para:</span>
-                      </div>
-                      <div>
-                        {part.compatibleVehicles.slice(0, 2).map((cv, i) => (
-                          <span key={i}>
-                            {cv.make} {cv.model} ({cv.yearStart}-{cv.yearEnd}){i < 1 && part.compatibleVehicles.length > 1 ? ', ' : ''}
-                          </span>
-                        ))}
-                        {part.compatibleVehicles.length > 2 && (
-                          <span> y más</span>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 {/* Card Bottom */}
@@ -420,18 +336,6 @@ export default function PublicCatalogView({
                 </div>
               ) : (
                 <>
-                  {/* Car details input for context */}
-                  <div className="input-group" style={{ marginBottom: 0 }}>
-                    <label className="input-label">Detalles de tu vehículo (Año, Modelo, Motor):</label>
-                    <input
-                      type="text"
-                      className="input"
-                      placeholder="Ej: Toyota Hilux 2021 2.8 Diesel"
-                      value={clientCarDetails}
-                      onChange={(e) => setClientCarDetails(e.target.value)}
-                    />
-                  </div>
-
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {cart.map(item => (
                       <div

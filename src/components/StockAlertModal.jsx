@@ -87,9 +87,7 @@ export default function StockAlertModal({ parts, onAdjustStock, onClose, setting
                         marginTop: '4px'
                       }}>
                         <span>Marca: <strong>{part.brand}</strong></span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <MapPin size={12} /> {part.location || 'Sin ubicación'}
-                        </span>
+                        {part.category && <span>Categoría: <strong>{part.category}</strong></span>}
                       </div>
                     </div>
 

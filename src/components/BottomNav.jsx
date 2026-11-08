@@ -3,7 +3,6 @@ import {
   LayoutDashboard, 
   ShoppingCart, 
   Package, 
-  Car, 
   FileText, 
   Menu 
 } from 'lucide-react';
@@ -19,7 +18,6 @@ export default function BottomNav({
     { id: 'dashboard', label: 'Inicio', icon: LayoutDashboard },
     { id: 'pos', label: 'Mostrador', icon: ShoppingCart, badge: cartCount > 0 ? cartCount : null, badgeColor: 'var(--primary)' },
     { id: 'inventory', label: 'Repuestos', icon: Package, badge: lowStockCount > 0 ? lowStockCount : null, badgeColor: 'var(--warning)' },
-    { id: 'vehicles', label: 'Vehículos', icon: Car },
     { id: 'sales', label: 'Ventas', icon: FileText }
   ];
 

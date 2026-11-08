@@ -26,7 +26,6 @@ import ImagePreviewModal from '../components/ImagePreviewModal';
 export default function InventoryView({
   parts,
   settings,
-  vehicles,
   onCreatePart,
   onUpdatePart,
   onDeletePart,
@@ -47,7 +46,7 @@ export default function InventoryView({
   // Modal para Crear / Editar
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPart, setEditingPart] = useState(null);
-  const [activeTab, setActiveTab] = useState('info'); // info | pricing | vehicles
+  const [activeTab, setActiveTab] = useState('info'); // info | pricing
 
   // Form State
   const [formData, setFormData] = useState({
@@ -57,7 +56,7 @@ export default function InventoryView({
     name: '',
     brand: '',
     image: '/products/kit_arrastre.jpg',
-    category: 'frenos',
+    category: '',
     description: '',
     costPrice: 0,
     marginPercent: 60,
@@ -65,18 +64,7 @@ export default function InventoryView({
     wholesalePrice: 0,
     stock: 0,
     minStock: 3,
-    location: '',
-    warranty: '6 Meses',
-    compatibleVehicles: []
-  });
-
-  // Vehículo temporal a agregar en el modal
-  const [newVehicle, setNewVehicle] = useState({
-    make: 'Toyota',
-    model: 'Corolla',
-    yearStart: 2015,
-    yearEnd: 2022,
-    engine: '1.8L Dual VVT-i'
+    warranty: '6 Meses'
   });
 
   // Modal para ajuste rápido de stock
@@ -84,6 +72,18 @@ export default function InventoryView({
   const [adjustAmount, setAdjustAmount] = useState(5);
   const [adjustType, setAdjustType] = useState('in'); // in | out
   const [adjustReason, setAdjustReason] = useState('Entrada de mercadería / Proveedor');
+
+  // Formatear etiqueta de categoría (traduce IDs predefinidos o muestra el texto libre escrito por el cliente)
+  const getCategoryLabel = (catValue) => {
+    if (!catValue) return 'General';
+    const found = CATEGORIES.find(c => c.id.toLowerCase() === catValue.toLowerCase());
+    return found ? found.name : catValue;
+  };
+
+  // Categorías únicas dinámicas presentes en el inventario + sugerencias base
+  const uniqueCategories = Array.from(
+    new Set(parts.map(p => (p.category || '').trim()).filter(Boolean))
+  );
 
   // Filtrado de repuestos
   const filteredParts = parts.filter(part => {
@@ -94,10 +94,10 @@ export default function InventoryView({
       part.oemNumber.toLowerCase().includes(q) ||
       part.barcode.includes(q) ||
       part.brand.toLowerCase().includes(q) ||
-      (part.location && part.location.toLowerCase().includes(q))
+      (part.category && part.category.toLowerCase().includes(q))
     );
 
-    const matchesCategory = categoryFilter === 'all' || part.category === categoryFilter;
+    const matchesCategory = categoryFilter === 'all' || (part.category || '').toLowerCase() === categoryFilter.toLowerCase();
 
     let matchesStock = true;
     if (stockFilter === 'low') matchesStock = part.stock <= part.minStock && part.stock > 0;
@@ -121,7 +121,7 @@ export default function InventoryView({
       name: '',
       brand: '',
       image: '/products/kit_arrastre.jpg',
-      category: 'frenos',
+      category: '',
       description: '',
       costPrice: 10,
       marginPercent: 60,
@@ -129,11 +129,7 @@ export default function InventoryView({
       wholesalePrice: 14,
       stock: 5,
       minStock: 3,
-      location: 'Pasillo A - Est. 1 - Gav. 01',
-      warranty: '6 Meses',
-      compatibleVehicles: [
-        { make: 'Toyota', model: 'Corolla', yearStart: 2014, yearEnd: 2022, engine: '1.8L Dual VVT-i' }
-      ]
+      warranty: '6 Meses'
     });
     setActiveTab('info');
     setIsFormOpen(true);
@@ -144,45 +140,86 @@ export default function InventoryView({
     setEditingPart(part);
     const cost = Number(part.costPrice) || 0;
     const sale = Number(part.salePrice) || 0;
-    const margin = cost > 0 ? Math.round(((sale - cost) / cost) * 100) : 50;
+    const margin = cost > 0 ? Number((((sale - cost) / cost) * 100).toFixed(2)) : 50;
 
     setFormData({
       ...part,
       image: part.image || '/products/kit_arrastre.jpg',
-      marginPercent: margin,
-      compatibleVehicles: part.compatibleVehicles || []
+      category: getCategoryLabel(part.category),
+      marginPercent: margin
     });
     setActiveTab('info');
     setIsFormOpen(true);
   };
 
-  // Cambio de costos y recalculo de margen automático
-  const handleCostChange = (newCost) => {
-    const cost = parseFloat(newCost) || 0;
+  // Vinculación automática entre Costo de Compra, Margen de Ganancia (%) y Precio de Venta Detalle
+  const handleCostChange = (rawVal) => {
+    if (rawVal === '') {
+      setFormData({ ...formData, costPrice: '', salePrice: 0, wholesalePrice: 0 });
+      return;
+    }
+    const cost = parseFloat(rawVal);
+    if (isNaN(cost)) return;
     const margin = parseFloat(formData.marginPercent) || 0;
-    const sale = cost + (cost * (margin / 100));
-    const wholesale = cost + (cost * ((margin * 0.7) / 100));
+    const sale = cost * (1 + margin / 100);
+    const wholesale = cost * (1 + (margin * 0.7) / 100);
 
     setFormData({
       ...formData,
-      costPrice: cost,
+      costPrice: rawVal,
       salePrice: Number(sale.toFixed(2)),
       wholesalePrice: Number(wholesale.toFixed(2))
     });
   };
 
-  const handleMarginChange = (newMargin) => {
-    const margin = parseFloat(newMargin) || 0;
+  const handleMarginChange = (rawVal) => {
+    if (rawVal === '') {
+      const cost = parseFloat(formData.costPrice) || 0;
+      setFormData({ ...formData, marginPercent: '', salePrice: Number(cost.toFixed(2)), wholesalePrice: Number(cost.toFixed(2)) });
+      return;
+    }
+    const margin = parseFloat(rawVal);
+    if (isNaN(margin)) return;
     const cost = parseFloat(formData.costPrice) || 0;
-    const sale = cost + (cost * (margin / 100));
-    const wholesale = cost + (cost * ((margin * 0.7) / 100));
+    const sale = cost * (1 + margin / 100);
+    const wholesale = cost * (1 + (margin * 0.7) / 100);
 
     setFormData({
       ...formData,
-      marginPercent: margin,
+      marginPercent: rawVal,
       salePrice: Number(sale.toFixed(2)),
       wholesalePrice: Number(wholesale.toFixed(2))
     });
+  };
+
+  const handleSalePriceChange = (rawVal) => {
+    if (rawVal === '') {
+      setFormData({ ...formData, salePrice: '', marginPercent: 0 });
+      return;
+    }
+    const sale = parseFloat(rawVal);
+    if (isNaN(sale)) return;
+    const cost = parseFloat(formData.costPrice) || 0;
+
+    if (cost > 0) {
+      const calculatedMargin = ((sale - cost) / cost) * 100;
+      const wholesale = cost + (sale - cost) * 0.7;
+      setFormData({
+        ...formData,
+        salePrice: rawVal,
+        marginPercent: Number(calculatedMargin.toFixed(2)),
+        wholesalePrice: Number(Math.max(0, wholesale).toFixed(2))
+      });
+    } else {
+      const margin = parseFloat(formData.marginPercent) || 0;
+      const calculatedCost = margin > -100 ? sale / (1 + margin / 100) : 0;
+      setFormData({
+        ...formData,
+        salePrice: rawVal,
+        costPrice: Number(calculatedCost.toFixed(2)),
+        wholesalePrice: Number((sale * 0.9).toFixed(2))
+      });
+    }
   };
 
   // Guardar formulario
@@ -193,28 +230,21 @@ export default function InventoryView({
       return;
     }
 
+    const normalizedPayload = {
+      ...formData,
+      category: (formData.category || 'General').trim(),
+      costPrice: Number(formData.costPrice) || 0,
+      marginPercent: Number(formData.marginPercent) || 0,
+      salePrice: Number(formData.salePrice) || 0,
+      wholesalePrice: Number(formData.wholesalePrice) || 0
+    };
+
     if (editingPart) {
-      onUpdatePart(editingPart.id, formData);
+      onUpdatePart(editingPart.id, normalizedPayload);
     } else {
-      onCreatePart(formData);
+      onCreatePart(normalizedPayload);
     }
     setIsFormOpen(false);
-  };
-
-  // Agregar vehículo compatible al repuesto en el modal
-  const handleAddVehicleToPart = () => {
-    if (!newVehicle.make || !newVehicle.model) return;
-    setFormData({
-      ...formData,
-      compatibleVehicles: [...formData.compatibleVehicles, { ...newVehicle }]
-    });
-  };
-
-  const handleRemoveVehicleFromPart = (index) => {
-    setFormData({
-      ...formData,
-      compatibleVehicles: formData.compatibleVehicles.filter((_, i) => i !== index)
-    });
   };
 
   // Ejecutar ajuste de stock
@@ -227,9 +257,9 @@ export default function InventoryView({
 
   // Exportar a CSV
   const handleExportCSV = () => {
-    let csv = "SKU,Codigo OEM,Nombre,Marca,Categoria,Ubicacion,Stock,Stock Minimo,Costo,Precio Venta,Precio Mayorista\n";
+    let csv = "SKU,Codigo OEM,Nombre,Marca,Categoria,Stock,Stock Minimo,Costo,Precio Venta,Precio Mayorista\n";
     parts.forEach(p => {
-      csv += `"${p.sku}","${p.oemNumber}","${p.name}","${p.brand}","${p.category}","${p.location || ''}",${p.stock},${p.minStock},${p.costPrice},${p.salePrice},${p.wholesalePrice}\n`;
+      csv += `"${p.sku}","${p.oemNumber}","${p.name}","${p.brand}","${getCategoryLabel(p.category)}",${p.stock},${p.minStock},${p.costPrice},${p.salePrice},${p.wholesalePrice}\n`;
     });
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -255,7 +285,7 @@ export default function InventoryView({
         <div>
           <h2 style={{ fontSize: 'clamp(1.05rem, 2.5vw, 1.25rem)', fontWeight: 800, lineHeight: 1.2 }}>Inventario de Repuestos</h2>
           <p style={{ fontSize: '0.76rem', color: 'var(--text-secondary)' }}>
-            Control de stock, códigos OEM, compatibilidad automotriz y valorización de almacén
+            Control de stock, códigos OEM, costos, márgenes y precios de venta
           </p>
         </div>
 
@@ -310,8 +340,8 @@ export default function InventoryView({
           }}
         >
           <option value="all">Todas las Categorías</option>
-          {CATEGORIES.map(c => (
-            <option key={c.id} value={c.id}>{c.name}</option>
+          {uniqueCategories.map(cat => (
+            <option key={cat} value={cat}>{getCategoryLabel(cat)}</option>
           ))}
         </select>
 
@@ -431,7 +461,7 @@ export default function InventoryView({
                       {part.name}
                     </h4>
                     <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                      {part.brand} • SKU: {part.sku} • {part.location || 'Almacén'}
+                      {part.brand} • SKU: {part.sku} • {getCategoryLabel(part.category)}
                     </div>
                   </div>
                 </div>
@@ -620,20 +650,14 @@ export default function InventoryView({
                               <span className="badge badge-primary mono" style={{ fontSize: '0.64rem', padding: '1px 5px' }}>
                                 {part.brand}
                               </span>
-                              {part.compatibleVehicles && part.compatibleVehicles.length > 0 && (
-                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                                  Aplica: {part.compatibleVehicles[0].make} {part.compatibleVehicles[0].model}
-                                  {part.compatibleVehicles.length > 1 && ` (+${part.compatibleVehicles.length - 1})`}
-                                </span>
-                              )}
                             </div>
                           </div>
                         </div>
                       </td>
 
                       {/* Category */}
-                      <td style={{ padding: '7px 14px', textTransform: 'capitalize', fontSize: '0.8rem' }}>
-                        {part.category}
+                      <td style={{ padding: '7px 14px', fontSize: '0.8rem' }}>
+                        {getCategoryLabel(part.category)}
                       </td>
 
                       {/* Stock badge */}
@@ -800,8 +824,7 @@ export default function InventoryView({
             }}>
               {[
                 { id: 'info', label: '1. Información Básica' },
-                { id: 'pricing', label: '2. Costos, Precios y Almacén' },
-                { id: 'vehicles', label: `3. Compatibilidad Vehicular (${formData.compatibleVehicles.length})` }
+                { id: 'pricing', label: '2. Costos, Precios y Almacén' }
               ].map(tab => (
                 <button
                   key={tab.id}
@@ -878,16 +901,24 @@ export default function InventoryView({
                         />
                       </div>
                       <div className="input-group">
-                        <label className="input-label">Categoría *</label>
-                        <select
-                          className="select"
+                        <label className="input-label">Categoría (Escribe cualquier categoría) *</label>
+                        <input
+                          type="text"
+                          list="custom-categories-list"
+                          className="input"
+                          placeholder="Ej: Frenos, Motor, Rodamientos, Empacaduras..."
                           value={formData.category}
                           onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                        >
-                          {CATEGORIES.map(cat => (
-                            <option key={cat.id} value={cat.id}>{cat.name}</option>
+                          required
+                        />
+                        <datalist id="custom-categories-list">
+                          {Array.from(new Set([
+                            ...CATEGORIES.map(c => c.name),
+                            ...uniqueCategories.map(c => getCategoryLabel(c))
+                          ])).map(catName => (
+                            <option key={catName} value={catName} />
                           ))}
-                        </select>
+                        </datalist>
                       </div>
                     </div>
 
@@ -915,11 +946,11 @@ export default function InventoryView({
                     </div>
 
                     <div className="input-group">
-                      <label className="input-label">Descripción Técnica / Notas de Compatibilidad</label>
+                      <label className="input-label">Descripción Técnica del Repuesto</label>
                       <textarea
                         className="textarea"
                         rows={3}
-                        placeholder="Detalles técnicos, especificaciones, medidas o recomendaciones de instalación..."
+                        placeholder="Detalles técnicos, especificaciones o medidas del repuesto..."
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       />
@@ -998,39 +1029,55 @@ export default function InventoryView({
                       backgroundColor: 'var(--bg-tertiary)',
                       borderRadius: 'var(--radius-md)',
                       border: '1px solid var(--border-color)',
-                      marginBottom: '4px'
-                    }} className="responsive-form-grid-3">
-                      <div className="input-group">
-                        <label className="input-label">Costo de Compra ({settings.currencySymbol})</label>
-                        <input
-                          type="number"
-                          step="any"
-                          className="input"
-                          value={formData.costPrice}
-                          onChange={(e) => handleCostChange(e.target.value)}
-                        />
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--accent-cyan)' }}>
+                          ⚡ Cálculo Automático Vinculado (Costo ↔ Margen % ↔ Precio Venta)
+                        </span>
+                        <span className="badge badge-success" style={{ fontSize: '0.74rem' }}>
+                          Ganancia unitaria: +{settings.currencySymbol}{Math.max(0, (Number(formData.salePrice) || 0) - (Number(formData.costPrice) || 0)).toFixed(2)}
+                        </span>
                       </div>
 
-                      <div className="input-group">
-                        <label className="input-label">Margen de Ganancia (%)</label>
-                        <input
-                          type="number"
-                          className="input"
-                          value={formData.marginPercent}
-                          onChange={(e) => handleMarginChange(e.target.value)}
-                        />
-                      </div>
+                      <div className="responsive-form-grid-3">
+                        <div className="input-group">
+                          <label className="input-label">Costo de Compra ({settings.currencySymbol})</label>
+                          <input
+                            type="number"
+                            step="any"
+                            min="0"
+                            className="input"
+                            value={formData.costPrice}
+                            onChange={(e) => handleCostChange(e.target.value)}
+                          />
+                        </div>
 
-                      <div className="input-group">
-                        <label className="input-label">Precio Venta Detalle ({settings.currencySymbol})</label>
-                        <input
-                          type="number"
-                          step="any"
-                          className="input"
-                          style={{ fontWeight: 800, color: 'var(--primary-hover)' }}
-                          value={formData.salePrice}
-                          onChange={(e) => setFormData({ ...formData, salePrice: parseFloat(e.target.value) || 0 })}
-                        />
+                        <div className="input-group">
+                          <label className="input-label">Margen de Ganancia (%)</label>
+                          <input
+                            type="number"
+                            step="any"
+                            className="input"
+                            value={formData.marginPercent}
+                            onChange={(e) => handleMarginChange(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="input-group">
+                          <label className="input-label">Precio Venta Detalle ({settings.currencySymbol})</label>
+                          <input
+                            type="number"
+                            step="any"
+                            min="0"
+                            className="input"
+                            style={{ fontWeight: 800, color: 'var(--primary-hover)' }}
+                            value={formData.salePrice}
+                            onChange={(e) => handleSalePriceChange(e.target.value)}
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -1065,145 +1112,6 @@ export default function InventoryView({
                           onChange={(e) => setFormData({ ...formData, minStock: parseInt(e.target.value) || 0 })}
                         />
                       </div>
-                    </div>
-
-                    <div className="input-group">
-                      <label className="input-label">Ubicación Física en Almacén (Vital para despachos)</label>
-                      <input
-                        type="text"
-                        className="input"
-                        placeholder="Ej: Pasillo B - Estantería 3 - Gaveta 14"
-                        value={formData.location}
-                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* TAB 3: COMPATIBILIDAD VEHICULAR */}
-                {activeTab === 'vehicles' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div style={{
-                      padding: '16px',
-                      backgroundColor: 'var(--bg-tertiary)',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--border-color)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '12px'
-                    }}>
-                      <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>Vincular Nuevo Vehículo Compatible</div>
-
-                      <div className="responsive-form-grid-2">
-                        <div>
-                          <label className="input-label">Marca</label>
-                          <select
-                            className="select"
-                            value={newVehicle.make}
-                            onChange={(e) => setNewVehicle({ ...newVehicle, make: e.target.value })}
-                          >
-                            {vehicles.map(v => (
-                              <option key={v.make} value={v.make}>{v.make}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="input-label">Modelo</label>
-                          <input
-                            type="text"
-                            className="input"
-                            placeholder="Ej: Corolla, Hilux, Aveo..."
-                            value={newVehicle.model}
-                            onChange={(e) => setNewVehicle({ ...newVehicle, model: e.target.value })}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="responsive-form-grid-3">
-                        <div>
-                          <label className="input-label">Año Inicio</label>
-                          <input
-                            type="number"
-                            className="input"
-                            value={newVehicle.yearStart}
-                            onChange={(e) => setNewVehicle({ ...newVehicle, yearStart: parseInt(e.target.value) || 2010 })}
-                          />
-                        </div>
-                        <div>
-                          <label className="input-label">Año Fin</label>
-                          <input
-                            type="number"
-                            className="input"
-                            value={newVehicle.yearEnd}
-                            onChange={(e) => setNewVehicle({ ...newVehicle, yearEnd: parseInt(e.target.value) || 2024 })}
-                          />
-                        </div>
-                        <div>
-                          <label className="input-label">Motorización</label>
-                          <input
-                            type="text"
-                            className="input"
-                            placeholder="Ej: 1.8L Dual VVT-i"
-                            value={newVehicle.engine}
-                            onChange={(e) => setNewVehicle({ ...newVehicle, engine: e.target.value })}
-                          />
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        className="btn btn-secondary btn-sm"
-                        onClick={handleAddVehicleToPart}
-                        style={{ alignSelf: 'flex-start' }}
-                      >
-                        <Plus size={14} />
-                        <span>Agregar Compatibilidad</span>
-                      </button>
-                    </div>
-
-                    {/* Lista de vehículos compatibles asignados */}
-                    <div>
-                      <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '8px' }}>
-                        Vehículos a los que les sirve este repuesto ({formData.compatibleVehicles.length}):
-                      </div>
-
-                      {formData.compatibleVehicles.length === 0 ? (
-                        <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.84rem' }}>
-                          No hay vehículos vinculados aún. Agrega los modelos compatibles arriba.
-                        </div>
-                      ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          {formData.compatibleVehicles.map((cv, idx) => (
-                            <div
-                              key={idx}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                padding: '8px 12px',
-                                backgroundColor: 'var(--bg-card)',
-                                borderRadius: 'var(--radius-sm)',
-                                border: '1px solid var(--border-color)',
-                                fontSize: '0.84rem'
-                              }}
-                            >
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <Car size={16} color="var(--primary)" />
-                                <strong>{cv.make} {cv.model}</strong>
-                                <span style={{ color: 'var(--text-muted)' }}>({cv.yearStart} - {cv.yearEnd})</span>
-                                {cv.engine && <span className="badge badge-primary">{cv.engine}</span>}
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveVehicleFromPart(idx)}
-                                style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer' }}
-                              >
-                                <X size={16} />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   </div>
                 )}
