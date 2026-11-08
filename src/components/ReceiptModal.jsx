@@ -12,12 +12,15 @@ import {
   Share2,
   Phone,
   Copy,
-  Check
+  Check,
+  Usb
 } from 'lucide-react';
+import { printThermalTicket, printEscPosSerial } from '../services/thermalPrinter';
 
 export default function ReceiptModal({ sale, settings, onClose }) {
   const receiptRef = useRef(null);
   const [shareFormat, setShareFormat] = useState('pdf'); // 'pdf' (preferido) | 'image'
+  const [printerWidth, setPrinterWidth] = useState(settings?.printerWidth || '58mm');
   const [customerPhone, setCustomerPhone] = useState(sale?.customer?.phone || '');
   const [isGenerating, setIsGenerating] = useState(false);
   const [statusNotice, setStatusNotice] = useState(null);
@@ -125,7 +128,25 @@ export default function ReceiptModal({ sale, settings, onClose }) {
   if (!sale) return null;
 
   const handlePrint = () => {
-    window.print();
+    printThermalTicket(sale, settings, printerWidth);
+    setStatusNotice({
+      type: 'success',
+      text: `🖨️ Formato térmico ${printerWidth} (Impresora NT-5890K) enviado a impresión. Selecciona tu impresora "NT-5890K / POS-58" en la ventana.`
+    });
+  };
+
+  const handleDirectUsbPrint = async () => {
+    try {
+      await printEscPosSerial(sale, settings);
+      setStatusNotice({
+        type: 'success',
+        text: '🖨️ ¡Ticket impreso directamente por puerto USB / Serial en tu NT-5890K!'
+      });
+    } catch (err) {
+      if (err.name !== 'NotFoundError') {
+        printThermalTicket(sale, settings, printerWidth);
+      }
+    }
   };
 
   // Mensaje corto de acompañamiento para cuando se adjunta el PDF o la Foto en WhatsApp
@@ -579,8 +600,20 @@ export default function ReceiptModal({ sale, settings, onClose }) {
           flexShrink: 0
         }}>
           <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px' }}>
-            <span>FORMATO DE FACTURA PARA WHATSAPP:</span>
-            <span className="badge badge-success" style={{ fontSize: '0.68rem' }}>IVA ({taxRate}%) Incluido</span>
+            <span>FORMATO WHATSAPP & IMPRESORA TÉRMICA ({printerWidth === '58mm' ? 'NT-5890K 58mm' : '80mm'}):</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <select
+                value={printerWidth}
+                onChange={(e) => setPrinterWidth(e.target.value)}
+                className="select"
+                style={{ width: 'auto', padding: '2px 8px', fontSize: '0.7rem', height: '24px' }}
+                title="Ancho de papel térmico"
+              >
+                <option value="58mm">🖨️ Papel 58mm (NT-5890K)</option>
+                <option value="80mm">🖨️ Papel 80mm</option>
+              </select>
+              <span className="badge badge-success" style={{ fontSize: '0.68rem' }}>IVA ({taxRate}%) Incluido</span>
+            </div>
           </div>
 
           {/* Selector de Formato (PDF preferido vs Foto) + Teléfono del cliente */}
@@ -675,25 +708,35 @@ export default function ReceiptModal({ sale, settings, onClose }) {
 
         {/* Modal Action Buttons */}
         <div className="modal-footer no-print" style={{ flexWrap: 'wrap', gap: '8px' }}>
-          <button className="btn btn-secondary" onClick={onClose}>
+          <button className="btn btn-secondary btn-sm" onClick={onClose}>
             Cerrar
           </button>
           <button 
-            className="btn btn-success" 
+            className="btn btn-success btn-sm" 
             onClick={handleWhatsAppShare}
             disabled={isGenerating}
             style={{ fontWeight: 800, flex: 1 }}
           >
-            <MessageCircle size={17} />
+            <MessageCircle size={16} />
             <span>
               {isGenerating 
-                ? 'Preparando Factura...' 
+                ? 'Preparando...' 
                 : `Enviar ${shareFormat === 'pdf' ? 'PDF' : 'Foto'} a WhatsApp`}
             </span>
           </button>
-          <button className="btn btn-primary" onClick={handlePrint}>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={handleDirectUsbPrint}
+            title="Impresión térmica directa por puerto USB/Serial (ESC/POS) sin cuadro de diálogo"
+            style={{ gap: '5px' }}
+          >
+            <Usb size={15} />
+            <span>USB Directo</span>
+          </button>
+          <button className="btn btn-primary btn-sm" onClick={handlePrint} style={{ fontWeight: 800 }}>
             <Printer size={16} />
-            <span>Imprimir</span>
+            <span>Imprimir ({printerWidth === '58mm' ? 'NT-5890K' : '80mm'})</span>
           </button>
         </div>
       </div>

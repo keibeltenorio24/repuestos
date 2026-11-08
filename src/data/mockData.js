@@ -14,7 +14,10 @@ export const INITIAL_SETTINGS = {
   currencyCode: "USD",
   taxRate: 16, // %
   ticketFooter: "¡Garantía de 30 días en repuestos mecánicos! Partes eléctricas no tienen cambio ni devolución. Guarde este ticket.",
-  logoUrl: "/logo.jpg"
+  logoUrl: "/logo.jpg",
+  printerModel: "NT-5890K",
+  printerWidth: "58mm",
+  autoPrintTicket: false
 };
 
 export const VEHICLE_DATABASE = [

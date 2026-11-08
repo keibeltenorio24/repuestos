@@ -7,9 +7,11 @@ import {
   CheckCircle2, 
   Server, 
   Database,
-  Sparkles
+  Sparkles,
+  Printer
 } from 'lucide-react';
 import { storage } from '../services/storage';
+import { printTestThermalTicket } from '../services/thermalPrinter';
 
 export default function SettingsView({ 
   settings, 
@@ -344,6 +346,60 @@ export default function SettingsView({
               >
                 <RotateCcw size={15} />
                 <span>Cargar Catálogo Demo (17 Repuestos)</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Thermal Printer NT-5890K Card */}
+          <div style={{
+            backgroundColor: 'var(--bg-secondary)',
+            padding: '14px 18px',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--border-accent)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Printer size={20} color="var(--accent-cyan)" />
+                <div>
+                  <h3 style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    Impresora de Tickets Vinculada: NT-5890K (58mm)
+                  </h3>
+                  <p style={{ fontSize: '0.73rem', color: 'var(--text-secondary)' }}>
+                    Calibración térmica de 48mm útiles en rollo de 58mm (ESC/POS) sin afectar el PDF/Foto de WhatsApp.
+                  </p>
+                </div>
+              </div>
+              <span className="badge badge-success" style={{ fontSize: '0.68rem' }}>Activa</span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px', alignItems: 'end' }}>
+              <div className="input-group" style={{ marginBottom: 0 }}>
+                <label className="input-label">Formato de Rollo Térmico Predeterminado</label>
+                <select
+                  className="select"
+                  value={formData.printerWidth || '58mm'}
+                  onChange={(e) => {
+                    const updated = { ...formData, printerWidth: e.target.value };
+                    setFormData(updated);
+                    onUpdateSettings(updated);
+                  }}
+                >
+                  <option value="58mm">🖨️ Impresora Térmica NT-5890K (Rollo 58mm)</option>
+                  <option value="80mm">🖨️ Impresora Térmica Estándar (Rollo 80mm)</option>
+                </select>
+              </div>
+
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => printTestThermalTicket(formData)}
+                style={{ height: '36px', fontWeight: 700 }}
+              >
+                <Printer size={15} />
+                <span>Imprimir Ticket de Prueba</span>
               </button>
             </div>
           </div>
