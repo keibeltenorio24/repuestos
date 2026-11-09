@@ -12,6 +12,7 @@ import {
   FileCheck,
   ShoppingCart
 } from 'lucide-react';
+import { printThermalTicket } from '../services/thermalPrinter';
 
 export default function SalesHistoryView({ 
   sales, 
@@ -360,6 +361,15 @@ export default function SalesHistoryView({
                               <span>Vender</span>
                             </button>
                           )}
+                          <button
+                            className="btn btn-primary btn-sm"
+                            onClick={() => printThermalTicket(sale, settings, settings?.printerWidth || '58mm')}
+                            title="Imprimir Ticket 58mm en Impresora Térmica NT-5890K"
+                            style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.75rem' }}
+                          >
+                            <Printer size={14} />
+                            <span>Imprimir NT-5890K</span>
+                          </button>
                           <button
                             className="btn btn-secondary btn-sm"
                             onClick={() => onOpenReceipt(sale)}

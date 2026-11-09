@@ -4,8 +4,10 @@ import {
   Moon, 
   Bell, 
   User,
-  Menu
+  Menu,
+  Printer
 } from 'lucide-react';
+import { printTestThermalTicket } from '../services/thermalPrinter';
 
 export default function Header({ 
   settings, 
@@ -87,6 +89,28 @@ export default function Header({
 
       {/* Right: Actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+        {/* Impresora Térmica NT-5890K Quick Status & Test Button */}
+        <button
+          type="button"
+          className="btn btn-secondary btn-sm"
+          onClick={() => printTestThermalTicket(settings)}
+          title="Haz clic para imprimir un ticket de prueba en tu Impresora Térmica NT-5890K (58mm)"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '5px 10px',
+            fontSize: '0.74rem',
+            borderColor: 'rgba(0, 229, 255, 0.45)',
+            backgroundColor: 'rgba(0, 229, 255, 0.08)',
+            color: 'var(--accent-cyan)',
+            fontWeight: 700
+          }}
+        >
+          <Printer size={14} />
+          <span>NT-5890K (58mm)</span>
+        </button>
+
         {/* Stock Alert Bell */}
         <button
           className="btn btn-secondary btn-icon"

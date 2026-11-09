@@ -280,8 +280,63 @@ export default function SettingsView({
           </div>
         </form>
 
-        {/* RIGHT COLUMN: Respaldo de Base de Datos & Arquitectura */}
+        {/* RIGHT COLUMN: Impresora Térmica NT-5890K & Respaldo de Base de Datos */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {/* Thermal Printer NT-5890K Card (AT THE TOP OF RIGHT COLUMN) */}
+          <div style={{
+            backgroundColor: 'var(--bg-secondary)',
+            padding: '14px 18px',
+            borderRadius: 'var(--radius-lg)',
+            border: '1.5px solid var(--accent-cyan)',
+            boxShadow: '0 0 16px rgba(0, 229, 255, 0.12)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Printer size={20} color="var(--accent-cyan)" />
+                <div>
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--accent-cyan)' }}>
+                    🖨️ Impresora de Tickets: NT-5890K (58mm)
+                  </h3>
+                  <p style={{ fontSize: '0.73rem', color: 'var(--text-secondary)' }}>
+                    Vinculada para imprimir facturas y tickets en rollo térmico de 58mm sin afectar WhatsApp.
+                  </p>
+                </div>
+              </div>
+              <span className="badge badge-success" style={{ fontSize: '0.68rem' }}>Vinculada</span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px', alignItems: 'end' }}>
+              <div className="input-group" style={{ marginBottom: 0 }}>
+                <label className="input-label">Modelo y Ancho de Papel Térmico</label>
+                <select
+                  className="select"
+                  value={formData.printerWidth || '58mm'}
+                  onChange={(e) => {
+                    const updated = { ...formData, printerWidth: e.target.value };
+                    setFormData(updated);
+                    onUpdateSettings(updated);
+                  }}
+                >
+                  <option value="58mm">🖨️ Impresora Térmica NT-5890K (Rollo 58mm)</option>
+                  <option value="80mm">🖨️ Impresora Térmica Estándar (Rollo 80mm)</option>
+                </select>
+              </div>
+
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => printTestThermalTicket(formData)}
+                style={{ height: '36px', fontWeight: 800 }}
+              >
+                <Printer size={15} />
+                <span>Probar Impresora NT-5890K</span>
+              </button>
+            </div>
+          </div>
+
           {/* Backup & Data Administration */}
           <div style={{
             backgroundColor: 'var(--bg-secondary)',
@@ -290,8 +345,7 @@ export default function SettingsView({
             border: '1px solid var(--border-color)',
             display: 'flex',
             flexDirection: 'column',
-            gap: '12px',
-            flex: 1
+            gap: '12px'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
               <Database size={20} color="var(--primary)" />
@@ -346,60 +400,6 @@ export default function SettingsView({
               >
                 <RotateCcw size={15} />
                 <span>Cargar Catálogo Demo (17 Repuestos)</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Thermal Printer NT-5890K Card */}
-          <div style={{
-            backgroundColor: 'var(--bg-secondary)',
-            padding: '14px 18px',
-            borderRadius: 'var(--radius-lg)',
-            border: '1px solid var(--border-accent)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Printer size={20} color="var(--accent-cyan)" />
-                <div>
-                  <h3 style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                    Impresora de Tickets Vinculada: NT-5890K (58mm)
-                  </h3>
-                  <p style={{ fontSize: '0.73rem', color: 'var(--text-secondary)' }}>
-                    Calibración térmica de 48mm útiles en rollo de 58mm (ESC/POS) sin afectar el PDF/Foto de WhatsApp.
-                  </p>
-                </div>
-              </div>
-              <span className="badge badge-success" style={{ fontSize: '0.68rem' }}>Activa</span>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px', alignItems: 'end' }}>
-              <div className="input-group" style={{ marginBottom: 0 }}>
-                <label className="input-label">Formato de Rollo Térmico Predeterminado</label>
-                <select
-                  className="select"
-                  value={formData.printerWidth || '58mm'}
-                  onChange={(e) => {
-                    const updated = { ...formData, printerWidth: e.target.value };
-                    setFormData(updated);
-                    onUpdateSettings(updated);
-                  }}
-                >
-                  <option value="58mm">🖨️ Impresora Térmica NT-5890K (Rollo 58mm)</option>
-                  <option value="80mm">🖨️ Impresora Térmica Estándar (Rollo 80mm)</option>
-                </select>
-              </div>
-
-              <button
-                type="button"
-                className="btn btn-primary btn-sm"
-                onClick={() => printTestThermalTicket(formData)}
-                style={{ height: '36px', fontWeight: 700 }}
-              >
-                <Printer size={15} />
-                <span>Imprimir Ticket de Prueba</span>
               </button>
             </div>
           </div>

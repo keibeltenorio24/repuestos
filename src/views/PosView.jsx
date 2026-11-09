@@ -18,10 +18,12 @@ import {
   MapPin,
   Check,
   Eye,
-  Package
+  Package,
+  Printer
 } from 'lucide-react';
 import { CATEGORIES } from '../data/mockData';
 import ImagePreviewModal from '../components/ImagePreviewModal';
+import { printTestThermalTicket } from '../services/thermalPrinter';
 
 export default function PosView({ 
   parts, 
@@ -804,6 +806,39 @@ export default function PosView({
                 {settings.currencySymbol}{grandTotal.toFixed(2)}
               </span>
             </div>
+          </div>
+
+          {/* Impresora Térmica NT-5890K Status Bar in POS */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '5px 10px',
+            borderRadius: 'var(--radius-sm)',
+            backgroundColor: 'rgba(0, 229, 255, 0.08)',
+            border: '1px solid rgba(0, 229, 255, 0.35)',
+            fontSize: '0.73rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--accent-cyan)', fontWeight: 700 }}>
+              <Printer size={14} />
+              <span>Impresora Ticket: NT-5890K (58mm)</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => printTestThermalTicket(settings)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--primary-hover)',
+                fontWeight: 700,
+                fontSize: '0.72rem',
+                cursor: 'pointer',
+                textDecoration: 'underline'
+              }}
+              title="Imprimir ticket de prueba en NT-5890K"
+            >
+              Probar
+            </button>
           </div>
 
           {/* Action Button: Checkout / Emitir Proforma */}
